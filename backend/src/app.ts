@@ -1,17 +1,18 @@
 import express from "express";
 import cors from "cors";
+import userRoutes from "./routes/user.routes";
 
 const app = express();
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Ruta de prueba
-app.get("/health", (req, res) => {
+app.get("/health", (_req, res) => {
   res.json({
-    message: "ABA Manager API funcionando"
+    message: "ABA Manager API funcionando",
   });
 });
+
+app.use("/api", userRoutes);
 
 export default app;
