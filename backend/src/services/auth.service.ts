@@ -2,6 +2,7 @@ import prisma from "../lib/prisma";
 import { comparePassword, hashPassword } from "../utils/hash";
 import { generateToken } from "../utils/jwt";
 import { LoginInput, RegisterInput } from "../validators/auth.validator";
+import { AppError } from "../utils/app-error";
 
 export const registerUser = async (data: RegisterInput) => {
   const existingUser = await prisma.user.findUnique({
@@ -9,7 +10,7 @@ export const registerUser = async (data: RegisterInput) => {
   });
 
   if (existingUser) {
-    throw new Error("Ya existe un usuario con ese correo");
+    throw new AppError("Ya existe un usuario con ese correo", 400);
   }
 
   const passwordHash = await hashPassword(data.password);
@@ -40,7 +41,7 @@ export const loginUser = async (data: LoginInput) => {
   });
 
   if (!user) {
-    throw new Error("Credenciales inválidas");
+    throw new AppError("Credenciales inválidas", 401);
   }
 
   const isPasswordValid = await comparePassword(
@@ -49,7 +50,7 @@ export const loginUser = async (data: LoginInput) => {
   );
 
   if (!isPasswordValid) {
-    throw new Error("Credenciales inválidas");
+    throw new AppError("Credenciales inválidas", 401);
   }
 
   const token = generateToken({

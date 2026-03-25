@@ -1,20 +1,21 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { loginUser, registerUser } from "../services/auth.service";
 import {
   validateLoginInput,
   validateRegisterInput,
 } from "../validators/auth.validator";
+import { AppError } from "../utils/app-error";
 
-export const register = async (req: Request, res: Response): Promise<void> => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const validation = validateRegisterInput(req.body);
 
     if (!validation.isValid) {
-      res.status(400).json({
-        success: false,
-        message: validation.message,
-      });
-      return;
+      throw new AppError(validation.message || "Datos inválidos", 400);
     }
 
     const user = await registerUser(validation.data!);
@@ -25,26 +26,20 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       data: user,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error al registrar usuario";
-
-    res.status(400).json({
-      success: false,
-      message,
-    });
+    next(error);
   }
 };
 
-export const login = async (req: Request, res: Response): Promise<void> => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const validation = validateLoginInput(req.body);
 
     if (!validation.isValid) {
-      res.status(400).json({
-        success: false,
-        message: validation.message,
-      });
-      return;
+      throw new AppError(validation.message || "Datos inválidos", 400);
     }
 
     const result = await loginUser(validation.data!);
@@ -55,12 +50,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       data: result,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error al iniciar sesión";
-
-    res.status(401).json({
-      success: false,
-      message,
-    });
+    next(error);
   }
 };
