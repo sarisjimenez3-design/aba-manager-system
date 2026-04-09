@@ -22,16 +22,20 @@ export default function LoginScreen({ navigation }: any) {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    try {
-      setLoading(true);
-      await signIn(email, password);
-    } catch (error) {
-      Alert.alert("Error", "No se pudo iniciar sesión");
-    } finally {
-      setLoading(false);
+  try {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert("Campos requeridos", "Debes ingresar correo y contraseña");
+      return;
     }
-  };
 
+    setLoading(true);
+    await signIn(email.trim(), password.trim());
+  } catch (error: any) {
+    Alert.alert("Error", error.message || "No se pudo iniciar sesión");
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <View style={styles.screen}>
       <AuthHeader title="Inicio Sesión" />

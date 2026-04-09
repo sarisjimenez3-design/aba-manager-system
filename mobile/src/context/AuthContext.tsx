@@ -36,7 +36,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loadSession();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+ const signIn = async (email: string, password: string) => {
+  try {
     const response = await loginRequest(email, password);
 
     const receivedToken = response.data.token;
@@ -47,7 +48,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     setToken(receivedToken);
     setUser(receivedUser);
-  };
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "No se pudo iniciar sesión";
+
+    throw new Error(message);
+  }
+};
 
   const signOut = async () => {
     await AsyncStorage.removeItem("token");
