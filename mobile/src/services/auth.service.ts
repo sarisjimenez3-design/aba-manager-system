@@ -7,6 +7,7 @@ export const loginRequest = async (email: string, password: string) => {
     password,
   });
 
+  console.log("AXIOS LOGIN RAW:", response.data);
   return response.data;
 };
 
@@ -19,5 +20,7 @@ export const registerRequest = async (payload: {
   role: UserRole;
 }) => {
   const response = await api.post("/api/auth/register", payload);
+
+  console.log("AXIOS REGISTER RAW:", response.data);
   return response.data;
 };

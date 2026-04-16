@@ -4,7 +4,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import AuthHeader from "../../components/auth/AuthHeader";
@@ -31,7 +30,10 @@ export default function RegisterScreen({ navigation }: any) {
         !password.trim() ||
         !confirmPassword.trim()
       ) {
-        Alert.alert("Campos requeridos", "Completa todos los campos obligatorios");
+        Alert.alert(
+          "Campos requeridos",
+          "Completa todos los campos obligatorios"
+        );
         return;
       }
 
@@ -42,7 +44,7 @@ export default function RegisterScreen({ navigation }: any) {
 
       setLoading(true);
 
-      await registerRequest({
+      const response = await registerRequest({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim(),
@@ -51,6 +53,8 @@ export default function RegisterScreen({ navigation }: any) {
         role: "ATHLETE",
       });
 
+      console.log("REGISTER RESPONSE:", response);
+
       Alert.alert("Éxito", "Usuario registrado correctamente", [
         {
           text: "OK",
@@ -58,8 +62,14 @@ export default function RegisterScreen({ navigation }: any) {
         },
       ]);
     } catch (error: any) {
+      console.log("REGISTER ERROR COMPLETO:", error);
+      console.log("REGISTER ERROR RESPONSE:", error?.response?.data);
+      console.log("REGISTER ERROR MESSAGE:", error?.message);
+
       const message =
-        error?.response?.data?.message || "No se pudo registrar el usuario";
+        error?.response?.data?.message ||
+        error?.message ||
+        "No se pudo registrar el usuario";
 
       Alert.alert("Error", message);
     } finally {

@@ -22,26 +22,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const loadSession = async () => {
-      const storedToken = await AsyncStorage.getItem("token");
-      const storedUser = await AsyncStorage.getItem("user");
+      try {
+        const storedToken = await AsyncStorage.getItem("token");
+        const storedUser = await AsyncStorage.getItem("user");
 
-      if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+        if (storedToken && storedUser) {
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser));
+        }
+      } catch (error) {
+        console.log("LOAD SESSION ERROR:", error);
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     };
 
     loadSession();
   }, []);
 
- const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string) => {
   try {
     const response = await loginRequest(email, password);
 
-    const receivedToken = response.data.token;
-    const receivedUser = response.data.user;
+    const receivedToken = response?.data?.token;
+    const receivedUser = response?.data?.user;
+
+    if (!receivedToken || !receivedUser) {
+      throw new Error("La respuesta del login no contiene token o usuario");
+    }
 
     await AsyncStorage.setItem("token", receivedToken);
     await AsyncStorage.setItem("user", JSON.stringify(receivedUser));
@@ -50,18 +58,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(receivedUser);
   } catch (error: any) {
     const message =
-      error?.response?.data?.message || "No se pudo iniciar sesión";
+      error?.response?.data?.message ||
+      error?.message ||
+      "No se pudo iniciar sesión";
 
     throw new Error(message);
   }
 };
 
   const signOut = async () => {
-    await AsyncStorage.removeItem("token");
-    await AsyncStorage.removeItem("user");
+    try {
+      await AsyncStorage.removeItem("token");
+      await AsyncStorage.removeItem("user");
 
-    setToken(null);
-    setUser(null);
+      setToken(null);
+      setUser(null);
+    } catch (error) {
+      console.log("SIGN OUT ERROR:", error);
+    }
   };
 
   return (

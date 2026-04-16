@@ -14,28 +14,34 @@ import CustomInput from "../../components/common/CustomInput";
 import { COLORS } from "../../constants/colors";
 import { useAuth } from "../../hooks/useAuth";
 
+
 export default function LoginScreen({ navigation }: any) {
   const { signIn } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [healthLoading, setHealthLoading] = useState(false);
 
   const handleLogin = async () => {
-  try {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert("Campos requeridos", "Debes ingresar correo y contraseña");
-      return;
-    }
+    try {
+      if (!email.trim() || !password.trim()) {
+        Alert.alert("Campos requeridos", "Debes ingresar correo y contraseña");
+        return;
+      }
 
-    setLoading(true);
-    await signIn(email.trim(), password.trim());
-  } catch (error: any) {
-    Alert.alert("Error", error.message || "No se pudo iniciar sesión");
-  } finally {
-    setLoading(false);
-  }
-};
+      setLoading(true);
+      await signIn(email.trim(), password.trim());
+    } catch (error: any) {
+      console.log("LOGIN SCREEN ERROR:", error);
+      Alert.alert("Error", error.message || "No se pudo iniciar sesión");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+ 
+
   return (
     <View style={styles.screen}>
       <AuthHeader title="Inicio Sesión" />
@@ -64,6 +70,10 @@ export default function LoginScreen({ navigation }: any) {
           onPress={handleLogin}
           loading={loading}
         />
+
+        <View style={{ height: 12 }} />
+
+        
 
         <TouchableOpacity style={styles.link}>
           <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
