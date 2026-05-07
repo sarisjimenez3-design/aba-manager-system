@@ -8,6 +8,9 @@ export interface User {
   phone?: string;
   profilePhoto?: string;
   role: UserRole;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface LoginResponse {
@@ -17,4 +20,10 @@ export interface LoginResponse {
     token: string;
     user: User;
   };
+}
+
+export interface ProfileResponse {
+  success: boolean;
+  message: string;
+  data: User;
 }

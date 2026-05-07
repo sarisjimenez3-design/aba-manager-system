@@ -4,6 +4,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import AuthHeader from "../../components/auth/AuthHeader";
@@ -11,6 +12,9 @@ import PrimaryButton from "../../components/common/PrimaryButton";
 import CustomInput from "../../components/common/CustomInput";
 import { COLORS } from "../../constants/colors";
 import { registerRequest } from "../../services/auth.service";
+import { UserRole } from "../../types/auth.types";
+
+const availableRoles: UserRole[] = ["ATHLETE", "PARENT"];
 
 export default function RegisterScreen({ navigation }: any) {
   const [firstName, setFirstName] = useState("");
@@ -19,6 +23,7 @@ export default function RegisterScreen({ navigation }: any) {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState<UserRole>("ATHLETE");
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
@@ -44,16 +49,14 @@ export default function RegisterScreen({ navigation }: any) {
 
       setLoading(true);
 
-      const response = await registerRequest({
+      await registerRequest({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim(),
         password: password.trim(),
         phone: phone.trim() || undefined,
-        role: "ATHLETE",
+        role,
       });
-
-      console.log("REGISTER RESPONSE:", response);
 
       Alert.alert("Éxito", "Usuario registrado correctamente", [
         {
@@ -62,10 +65,6 @@ export default function RegisterScreen({ navigation }: any) {
         },
       ]);
     } catch (error: any) {
-      console.log("REGISTER ERROR COMPLETO:", error);
-      console.log("REGISTER ERROR RESPONSE:", error?.response?.data);
-      console.log("REGISTER ERROR MESSAGE:", error?.message);
-
       const message =
         error?.response?.data?.message ||
         error?.message ||
@@ -126,6 +125,30 @@ export default function RegisterScreen({ navigation }: any) {
           secureTextEntry
         />
 
+        <Text style={styles.roleLabel}>Selecciona el tipo de cuenta</Text>
+
+        <View style={styles.rolesContainer}>
+          {availableRoles.map((item) => (
+            <TouchableOpacity
+              key={item}
+              style={[
+                styles.roleChip,
+                role === item && styles.roleChipSelected,
+              ]}
+              onPress={() => setRole(item)}
+            >
+              <Text
+                style={[
+                  styles.roleChipText,
+                  role === item && styles.roleChipTextSelected,
+                ]}
+              >
+                {item === "ATHLETE" ? "Deportista" : "Padre de familia"}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
         <PrimaryButton
           title="Registrarse"
           onPress={handleRegister}
@@ -155,6 +178,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 40,
+  },
+  roleLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: COLORS.textPrimary,
+    marginBottom: 10,
+    marginTop: 4,
+  },
+  rolesContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginBottom: 20,
+  },
+  roleChip: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  roleChipSelected: {
+    backgroundColor: COLORS.primaryMedium,
+    borderColor: COLORS.primaryMedium,
+  },
+  roleChipText: {
+    color: COLORS.textPrimary,
+    fontWeight: "500",
+  },
+  roleChipTextSelected: {
+    color: COLORS.white,
   },
   loginText: {
     textAlign: "center",

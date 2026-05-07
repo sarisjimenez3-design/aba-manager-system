@@ -1,6 +1,17 @@
 import prisma from "../lib/prisma";
 import { AppError } from "../utils/app-error";
 import { UpdateProfileInput } from "../validators/user.validator";
+import { hashPassword } from "../utils/hash";
+import { UserRole } from "@prisma/client";
+
+interface CreateUserByAdminInput {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phone?: string;
+  role: UserRole;
+}
 
 export const getMyProfile = async (userId: string) => {
   const user = await prisma.user.findUnique({
@@ -98,6 +109,42 @@ export const getUserById = async (id: string) => {
   if (!user) {
     throw new AppError("Usuario no encontrado", 404);
   }
+
+  return user;
+};
+
+export const createUserByAdmin = async (data: CreateUserByAdminInput) => {
+  const existingUser = await prisma.user.findUnique({
+    where: { email: data.email },
+  });
+
+  if (existingUser) {
+    throw new AppError("Ya existe un usuario con ese correo", 400);
+  }
+
+  const passwordHash = await hashPassword(data.password);
+
+  const user = await prisma.user.create({
+    data: {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      passwordHash,
+      phone: data.phone,
+      role: data.role,
+    },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      role: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
 
   return user;
 };

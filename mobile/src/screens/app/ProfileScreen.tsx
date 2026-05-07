@@ -1,19 +1,41 @@
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import { COLORS } from "../../constants/colors";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function ProfileScreen() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, refreshProfile } = useAuth();
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        await refreshProfile();
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+
+    loadProfile();
+  }, []);
+
+  if (loadingProfile) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primaryMedium} />
+        <Text style={styles.loadingText}>Cargando perfil...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.screen}>
       <View style={styles.card}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
-            {user?.firstName?.charAt(0)}
-            {user?.lastName?.charAt(0)}
+            {user?.firstName?.charAt(0) || ""}
+            {user?.lastName?.charAt(0) || ""}
           </Text>
         </View>
 
@@ -29,6 +51,13 @@ export default function ProfileScreen() {
           <Text style={styles.infoValue}>{user?.phone || "No registrado"}</Text>
         </View>
 
+        <View style={styles.infoBox}>
+          <Text style={styles.infoLabel}>Estado</Text>
+          <Text style={styles.infoValue}>
+            {user?.isActive ? "Activo" : "No disponible"}
+          </Text>
+        </View>
+
         <PrimaryButton title="Cerrar sesión" onPress={signOut} />
       </View>
     </View>
@@ -41,6 +70,17 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     padding: 20,
     justifyContent: "center",
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 12,
+    color: COLORS.textSecondary,
+    fontSize: 14,
   },
   card: {
     backgroundColor: COLORS.white,
@@ -89,7 +129,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     borderRadius: 14,
     padding: 14,
-    marginBottom: 18,
+    marginBottom: 14,
   },
   infoLabel: {
     color: COLORS.textSecondary,

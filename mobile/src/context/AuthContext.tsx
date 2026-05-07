@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useEffect, useState } from "react";
 import { loginRequest } from "../services/auth.service";
+import { getMyProfileRequest } from "../services/user.service";
 import { User } from "../types/auth.types";
 
 interface AuthContextProps {
@@ -9,6 +10,7 @@ interface AuthContextProps {
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextProps>(
@@ -41,30 +43,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-  try {
-    const response = await loginRequest(email, password);
+    try {
+      const response = await loginRequest(email, password);
 
-    const receivedToken = response?.data?.token;
-    const receivedUser = response?.data?.user;
+      const receivedToken = response?.data?.token;
+      const receivedUser = response?.data?.user;
 
-    if (!receivedToken || !receivedUser) {
-      throw new Error("La respuesta del login no contiene token o usuario");
+      if (!receivedToken || !receivedUser) {
+        throw new Error("La respuesta del login no contiene token o usuario");
+      }
+
+      await AsyncStorage.setItem("token", receivedToken);
+      await AsyncStorage.setItem("user", JSON.stringify(receivedUser));
+
+      setToken(receivedToken);
+      setUser(receivedUser);
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "No se pudo iniciar sesión";
+
+      throw new Error(message);
     }
+  };
 
-    await AsyncStorage.setItem("token", receivedToken);
-    await AsyncStorage.setItem("user", JSON.stringify(receivedUser));
+  const refreshProfile = async () => {
+    try {
+      const response = await getMyProfileRequest();
 
-    setToken(receivedToken);
-    setUser(receivedUser);
-  } catch (error: any) {
-    const message =
-      error?.response?.data?.message ||
-      error?.message ||
-      "No se pudo iniciar sesión";
+      const profile = response.data;
 
-    throw new Error(message);
-  }
-};
+      await AsyncStorage.setItem("user", JSON.stringify(profile));
+      setUser(profile);
+    } catch (error) {
+      console.log("REFRESH PROFILE ERROR:", error);
+    }
+  };
 
   const signOut = async () => {
     try {
@@ -79,7 +94,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{ user, token, isLoading, signIn, signOut, refreshProfile }}
+    >
       {children}
     </AuthContext.Provider>
   );
