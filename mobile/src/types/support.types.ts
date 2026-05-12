@@ -3,5 +3,7 @@ export interface SupportTicket {
   subject: string;
   message: string;
   status: string;
+  response?: string;
+  respondedAt?: string;
   createdAt: string;
 }

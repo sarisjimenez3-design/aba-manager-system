@@ -31,3 +31,14 @@ export const updatePaymentStatusRequest = async (
 
   return response.data;
 };
+
+export const uploadPaymentProofRequest = async (
+  id: string,
+  proofUrl: string
+) => {
+  const response = await api.patch(`/api/payments/${id}/proof`, {
+    proofUrl,
+  });
+
+  return response.data;
+};

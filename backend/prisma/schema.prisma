@@ -77,12 +77,16 @@ model Post {
 }
 
 model SupportTicket {
-  id        String   @id @default(uuid())
-  userId    String
-  subject   String
-  message   String
-  status    String   @default("OPEN")
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  subject     String
+  message     String
+  status      String   @default("PENDING")
 
-  user User @relation(fields: [userId], references: [id])
+  response    String?
+  respondedAt DateTime?
+
+  createdAt   DateTime @default(now())
+
+  userId      String
+  user        User @relation(fields: [userId], references: [id])
 }

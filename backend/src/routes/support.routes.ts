@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { createTicket, getTickets } from "../controllers/support.controller";
+import { createTicket, getTickets, answerTicket, getMyTickets } from "../controllers/support.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { roleMiddleware } from "../middlewares/role.middleware";
+
 
 const router = Router();
 /**
@@ -46,6 +47,8 @@ const router = Router();
 
 router.post("/", authMiddleware, createTicket);
 
+router.get("/me", authMiddleware, getMyTickets);
+
 /**
  * @swagger
  * /api/support:
@@ -65,8 +68,17 @@ router.post("/", authMiddleware, createTicket);
 router.get(
   "/",
   authMiddleware,
-  roleMiddleware(["ADMIN"]),
+  roleMiddleware(["ADMIN", "COACH"]),
   getTickets
+);
+
+
+
+router.patch(
+  "/:id/answer",
+  authMiddleware,
+  roleMiddleware(["ADMIN", "COACH"]),
+  answerTicket
 );
 
 export default router;

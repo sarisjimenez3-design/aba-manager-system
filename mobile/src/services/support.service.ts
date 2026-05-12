@@ -9,6 +9,16 @@ export const createSupportTicketRequest = async (payload: {
   return response.data;
 };
 
+export const getMySupportTicketsRequest = async () => {
+  const response = await api.get<{
+    success: boolean;
+    message: string;
+    data: SupportTicket[];
+  }>("/api/support/me");
+
+  return response.data;
+};
+
 export const getSupportTicketsRequest = async () => {
   const response = await api.get<{
     success: boolean;
@@ -18,3 +28,15 @@ export const getSupportTicketsRequest = async () => {
 
   return response.data;
 };
+
+export const answerSupportTicketRequest = async (
+  id: string,
+  response: string
+) => {
+  const result = await api.patch(`/api/support/${id}/answer`, {
+    response,
+  });
+
+  return result.data;
+};
+

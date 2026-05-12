@@ -4,9 +4,11 @@ import {
   createPaymentController,
   getMyPaymentList,
   getPaymentList,
+  uploadProof
 } from "../controllers/payment.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { roleMiddleware } from "../middlewares/role.middleware";
+
 
 const router = Router();
 
@@ -133,5 +135,8 @@ router.patch(
   roleMiddleware(["ADMIN"]),
   changePaymentStatus
 );
+
+
+router.patch("/:id/proof", authMiddleware, uploadProof);
 
 export default router;

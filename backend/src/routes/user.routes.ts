@@ -72,17 +72,60 @@ router.get("/", authMiddleware, roleMiddleware(["ADMIN"]), getUsers);
  */
 router.get("/:id", authMiddleware, roleMiddleware(["ADMIN"]), getUser);
 
+
 /**
  * @swagger
  * /api/users/internal:
  *   post:
  *     summary: Crear usuario interno
- *     tags: [Users]
+ *     description: Crea usuarios internos del club, como administradores o entrenadores. Solo puede ser usado por usuarios con rol ADMIN.
+ *     tags:
+ *       - Users
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - firstName
+ *               - lastName
+ *               - email
+ *               - password
+ *               - role
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: Carlos
+ *               lastName:
+ *                 type: string
+ *                 example: Ramírez
+ *               email:
+ *                 type: string
+ *                 example: coach@aba.com
+ *               password:
+ *                 type: string
+ *                 example: "123456"
+ *               phone:
+ *                 type: string
+ *                 example: "3001234567"
+ *               role:
+ *                 type: string
+ *                 enum: [ADMIN, COACH]
+ *                 example: COACH
  *     responses:
  *       201:
  *         description: Usuario interno creado correctamente
+ *       400:
+ *         description: Datos inválidos o correo ya registrado
+ *       401:
+ *         description: Token no enviado o inválido
+ *       403:
+ *         description: No tiene permisos para crear usuarios internos
+ *       500:
+ *         description: Error interno del servidor
  */
 router.post("/internal", authMiddleware, roleMiddleware(["ADMIN"]), createInternal);
     

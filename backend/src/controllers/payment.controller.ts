@@ -4,6 +4,7 @@ import {
   createPayment,
   getMyPayments,
   updatePaymentStatus,
+  uploadPaymentProof
 } from "../services/payment.service";
 import { AppError } from "../utils/app-error";
 
@@ -107,6 +108,38 @@ export const changePaymentStatus = async (
     res.status(200).json({
       success: true,
       message: "Estado de pago actualizado",
+      data: payment,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadProof = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) throw new AppError("Usuario no autenticado", 401);
+
+    const paymentId = String(req.params.id);
+    const userId = String(req.user.userId);
+    const { proofUrl } = req.body;
+
+    if (!proofUrl || typeof proofUrl !== "string") {
+      throw new AppError("Debes enviar el comprobante", 400);
+    }
+
+    const payment = await uploadPaymentProof(
+      paymentId,
+      userId,
+      proofUrl.trim()
+    );
+
+    res.json({
+      success: true,
+      message: "Comprobante enviado correctamente",
       data: payment,
     });
   } catch (error) {

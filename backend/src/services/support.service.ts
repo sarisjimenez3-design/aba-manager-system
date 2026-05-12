@@ -13,6 +13,13 @@ export const createSupportTicket = async (
   });
 };
 
+export const getMySupportTickets = async (userId: string) => {
+  return prisma.supportTicket.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
 export const getSupportTickets = async () => {
   return prisma.supportTicket.findMany({
     include: {
@@ -28,3 +35,18 @@ export const getSupportTickets = async () => {
     orderBy: { createdAt: "desc" },
   });
 };
+
+export const answerSupportTicket = async (
+  ticketId: string,
+  response: string
+) => {
+  return prisma.supportTicket.update({
+    where: { id: ticketId },
+    data: {
+      response,
+      status: "ANSWERED",
+      respondedAt: new Date(),
+    },
+  });
+};
+
