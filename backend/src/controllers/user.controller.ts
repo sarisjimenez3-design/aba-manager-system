@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import {
+  createInternalUser,
   getAllUsers,
   getMyProfile,
   getUserById,
@@ -7,6 +8,7 @@ import {
 } from "../services/user.service";
 import { AppError } from "../utils/app-error";
 import { validateUpdateProfileInput } from "../validators/user.validator";
+import { validateCreateInternalUserInput } from "../validators/internal-user.validator";
 
 export const getMe = async (
   req: Request,
@@ -99,6 +101,30 @@ export const getUser = async (
     res.status(200).json({
       success: true,
       message: "Usuario obtenido correctamente",
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createInternal = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const validation = validateCreateInternalUserInput(req.body);
+
+    if (!validation.isValid) {
+      throw new AppError(validation.message || "Datos inválidos", 400);
+    }
+
+    const user = await createInternalUser(validation.data!);
+
+    res.status(201).json({
+      success: true,
+      message: "Usuario interno creado correctamente",
       data: user,
     });
   } catch (error) {

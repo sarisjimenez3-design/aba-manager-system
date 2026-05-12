@@ -4,7 +4,12 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
 import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
+import paymentRoutes from "./routes/payment.routes";
 import { errorHandler } from "./middlewares/error-handler.middleware";
+import trainingRoutes from "./routes/training.routes";
+import postRoutes from "./routes/post.routes";
+import supportRoutes from "./routes/support.routes";
+import adminRoutes from "./routes/admin.routes";
 
 const app = express();
 
@@ -21,6 +26,11 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/trainings", trainingRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/support", supportRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

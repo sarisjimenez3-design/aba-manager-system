@@ -46,6 +46,8 @@ export const validateRegisterInput = (
   const normalizedLastName = lastName.trim();
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedPassword = password.trim();
+  const normalizedRole = role.trim().toUpperCase();
+
   const normalizedPhone =
     phone !== undefined && phone !== null ? String(phone).trim() : undefined;
 
@@ -77,14 +79,15 @@ export const validateRegisterInput = (
     };
   }
 
-  const allowedRoles = Object.values(UserRole);
-  if (!allowedRoles.includes(role as UserRole)) {
-    return {
-      isValid: false,
-      message: "El rol enviado no es válido",
-    };
-  }
+const publicRoles: UserRole[] = [UserRole.ATHLETE, UserRole.PARENT];
 
+if (!publicRoles.includes(normalizedRole as UserRole)) {
+  return {
+    isValid: false,
+    message:
+      "El registro público solo permite deportistas o padres de familia",
+  };
+}
   if (normalizedPhone && normalizedPhone.length < 7) {
     return {
       isValid: false,
@@ -100,7 +103,7 @@ export const validateRegisterInput = (
       email: normalizedEmail,
       password: normalizedPassword,
       phone: normalizedPhone,
-      role: role as UserRole,
+      role: normalizedRole as UserRole,
     },
   };
 };

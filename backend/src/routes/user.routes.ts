@@ -4,10 +4,10 @@ import {
   getUser,
   getUsers,
   updateMe,
+  createInternal,
 } from "../controllers/user.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { roleMiddleware } from "../middlewares/role.middleware";
-
 const router = Router();
 
 /**
@@ -72,4 +72,18 @@ router.get("/", authMiddleware, roleMiddleware(["ADMIN"]), getUsers);
  */
 router.get("/:id", authMiddleware, roleMiddleware(["ADMIN"]), getUser);
 
+/**
+ * @swagger
+ * /api/users/internal:
+ *   post:
+ *     summary: Crear usuario interno
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Usuario interno creado correctamente
+ */
+router.post("/internal", authMiddleware, roleMiddleware(["ADMIN"]), createInternal);
+    
 export default router;
