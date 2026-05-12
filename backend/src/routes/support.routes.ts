@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createTicket, getTickets, answerTicket, getMyTickets } from "../controllers/support.controller";
+import { createTicket, getTickets, answerTicket, getMyTickets, deleteTicket } from "../controllers/support.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { roleMiddleware } from "../middlewares/role.middleware";
 
@@ -81,4 +81,10 @@ router.patch(
   answerTicket
 );
 
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(["ADMIN", "COACH"]),
+  deleteTicket
+);
 export default router;

@@ -21,6 +21,7 @@ import { useAuth } from "../../hooks/useAuth";
 import {
   answerSupportTicketRequest,
   createSupportTicketRequest,
+  deleteSupportTicketRequest,
   getMySupportTicketsRequest,
   getSupportTicketsRequest,
 } from "../../services/support.service";
@@ -38,6 +39,7 @@ export default function SupportScreen() {
   const [sending, setSending] = useState(false);
   const [loadingTickets, setLoadingTickets] = useState(true);
   const [answeringId, setAnsweringId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const canViewTickets = user?.role === "ADMIN" || user?.role === "COACH";
   const canCreateTicket = user?.role === "ATHLETE" || user?.role === "PARENT";
@@ -137,6 +139,41 @@ export default function SupportScreen() {
     }
   };
 
+  const handleDeleteTicket = async (ticketId: string) => {
+    Alert.alert(
+      "Eliminar solicitud",
+      "¿Seguro que deseas eliminar este mensaje de soporte?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setDeletingId(ticketId);
+
+              await deleteSupportTicketRequest(ticketId);
+              await loadTickets();
+
+              Alert.alert("Éxito", "Solicitud eliminada correctamente.");
+            } catch (error: any) {
+              Alert.alert(
+                "Error",
+                error?.response?.data?.message ||
+                  "No se pudo eliminar la solicitud"
+              );
+            } finally {
+              setDeletingId(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
@@ -203,6 +240,13 @@ export default function SupportScreen() {
 
                 <Text style={styles.status}>Estado: {ticket.status}</Text>
 
+                {ticket.user ? (
+                  <Text style={styles.userInfo}>
+                    Usuario: {ticket.user.firstName} {ticket.user.lastName} ·{" "}
+                    {ticket.user.role}
+                  </Text>
+                ) : null}
+
                 <Text style={styles.label}>Mensaje:</Text>
                 <Text style={styles.text}>{ticket.message}</Text>
 
@@ -253,6 +297,18 @@ export default function SupportScreen() {
                   <Text style={styles.pendingResponse}>
                     Aún no hay respuesta del club.
                   </Text>
+                )}
+
+                {canViewTickets && (
+                  <>
+                    <Text style={styles.separator}>────────────</Text>
+
+                    <PrimaryButton
+                      title="Eliminar solicitud"
+                      onPress={() => handleDeleteTicket(ticket.id)}
+                      loading={deletingId === ticket.id}
+                    />
+                  </>
                 )}
               </AppCard>
             ))
@@ -310,6 +366,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 8,
   },
+  userInfo: {
+    color: COLORS.textSecondary,
+    fontSize: 13,
+    marginBottom: 8,
+  },
   label: {
     color: COLORS.textPrimary,
     fontWeight: "700",
@@ -331,6 +392,11 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontStyle: "italic",
     marginTop: 10,
+  },
+  separator: {
+    color: COLORS.border,
+    textAlign: "center",
+    marginVertical: 12,
   },
   date: {
     color: COLORS.textSecondary,

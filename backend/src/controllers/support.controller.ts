@@ -3,7 +3,8 @@ import {
   createSupportTicket,
   getSupportTickets,
   answerSupportTicket,
-  getMySupportTickets
+  getMySupportTickets,
+  deleteSupportTicket
 } from "../services/support.service";
 import { AppError } from "../utils/app-error";
 
@@ -96,6 +97,31 @@ export const getMyTickets = async (
       success: true,
       message: "Mis solicitudes obtenidas correctamente",
       data: tickets,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteTicket = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = Array.isArray(req.params.id)
+      ? req.params.id[0]
+      : req.params.id;
+
+    if (!id) {
+      throw new AppError("El id del ticket es obligatorio", 400);
+    }
+
+    await deleteSupportTicket(id);
+
+    res.json({
+      success: true,
+      message: "Solicitud eliminada correctamente",
     });
   } catch (error) {
     next(error);

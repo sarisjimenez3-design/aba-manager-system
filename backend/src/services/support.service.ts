@@ -50,3 +50,8 @@ export const answerSupportTicket = async (
   });
 };
 
+export const deleteSupportTicket = async (ticketId: string) => {
+  return prisma.supportTicket.delete({
+    where: { id: ticketId },
+  });
+};

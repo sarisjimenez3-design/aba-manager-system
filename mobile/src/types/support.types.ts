@@ -6,4 +6,10 @@ export interface SupportTicket {
   response?: string;
   respondedAt?: string;
   createdAt: string;
+  user?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+  };
 }

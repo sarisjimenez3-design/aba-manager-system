@@ -40,3 +40,7 @@ export const answerSupportTicketRequest = async (
   return result.data;
 };
 
+export const deleteSupportTicketRequest = async (id: string) => {
+  const response = await api.delete(`/api/support/${id}`);
+  return response.data;
+};
