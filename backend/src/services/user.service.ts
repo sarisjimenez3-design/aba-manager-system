@@ -23,7 +23,6 @@ export const getMyProfile = async (userId: string) => {
       lastName: true,
       email: true,
       phone: true,
-      profilePhoto: true,
       role: true,
       isActive: true,
       createdAt: true,
@@ -183,4 +182,25 @@ export const createInternalUser = async (data: CreateInternalUserInput) => {
   });
 
   return user;
+};
+
+export const getAthletes = async () => {
+  return prisma.user.findMany({
+    where: {
+      role: "ATHLETE",
+    },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      role: true,
+      isActive: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 };

@@ -24,3 +24,23 @@ export const registerRequest = async (payload: {
   console.log("AXIOS REGISTER RAW:", response.data);
   return response.data;
 };
+
+export const forgotPasswordRequest = async (email: string) => {
+  const response = await api.post("/api/auth/forgot-password", {
+    email,
+  });
+
+  return response.data;
+};
+
+export const resetPasswordRequest = async (
+  token: string,
+  newPassword: string
+) => {
+  const response = await api.post("/api/auth/reset-password", {
+    token,
+    newPassword,
+  });
+
+  return response.data;
+};

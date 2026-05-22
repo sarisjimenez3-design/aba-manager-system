@@ -7,11 +7,15 @@ import { COLORS } from "../../constants/colors";
 import { getAdminDashboardRequest } from "../../services/admin.service";
 import { AdminDashboard } from "../../types/admin.types";
 import { useFocusEffect } from "@react-navigation/native";
+import { Alert } from "react-native";
+import { sendPaymentRemindersRequest } from "../../services/notification.service";
+import PrimaryButton from "@/src/components/common/PrimaryButton";
+import { TouchableOpacity } from "react-native";
 
-
-export default function AdminDashboardScreen() {
+export default function AdminDashboardScreen({ navigation }: any) {
   const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sendingReminders, setSendingReminders] = useState(false);
 
   const loadDashboard = async () => {
     try {
@@ -30,6 +34,26 @@ export default function AdminDashboardScreen() {
       loadDashboard();
     }, [])
   );
+
+ const handleSendReminders = async () => {
+  try {
+    setSendingReminders(true);
+
+    const response = await sendPaymentRemindersRequest();
+
+    Alert.alert(
+      "Recordatorios enviados",
+      `Se enviaron ${response.data.sent} notificaciones.`
+    );
+  } catch (error: any) {
+    Alert.alert(
+      "Error",
+      error?.response?.data?.message || "No se pudieron enviar recordatorios"
+    );
+  } finally {
+    setSendingReminders(false);
+  }
+};
 
   return (
     <View style={styles.screen}>
@@ -50,12 +74,16 @@ export default function AdminDashboardScreen() {
                 <Text style={styles.metricText}>Usuarios</Text>
               </View>
 
-              <View style={styles.metricCard}>
-                <Text style={styles.metricNumber}>
-                  {dashboard?.totalAthletes ?? 0}
-                </Text>
-                <Text style={styles.metricText}>Deportistas</Text>
-              </View>
+              <TouchableOpacity
+  style={styles.metricCard}
+  onPress={() => navigation.navigate("Athletes")}
+>
+  <Text style={styles.metricNumber}>
+    {dashboard?.totalAthletes ?? 0}
+  </Text>
+  <Text style={styles.metricText}>Deportistas</Text>
+  <Text style={styles.tapText}>Ver detalle</Text>
+</TouchableOpacity>
             </View>
 
             <View style={styles.grid}>
@@ -98,6 +126,11 @@ export default function AdminDashboardScreen() {
               <Text style={styles.text}>
                 Este valor se calcula únicamente con pagos aprobados.
               </Text>
+              <PrimaryButton
+                title="Enviar recordatorios de pago"
+                onPress={handleSendReminders}  
+                loading={sendingReminders} 
+              />
             </AppCard>
           </>
         )}
@@ -152,5 +185,10 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: 15,
     lineHeight: 21,
+  },
+  tapText: {
+    color: COLORS.primaryMedium,
+    fontSize: 11,
+    marginTop: 4,
   },
 });

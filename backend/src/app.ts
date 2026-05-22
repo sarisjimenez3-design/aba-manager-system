@@ -10,6 +10,7 @@ import trainingRoutes from "./routes/training.routes";
 import postRoutes from "./routes/post.routes";
 import supportRoutes from "./routes/support.routes";
 import adminRoutes from "./routes/admin.routes";
+import notificationRoutes from "./routes/notification.routes";
 
 const app = express();
 
@@ -31,6 +32,8 @@ app.use("/api/trainings", trainingRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/uploads", express.static("uploads"));
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

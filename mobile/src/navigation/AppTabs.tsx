@@ -5,8 +5,8 @@ import HomeScreen from "../screens/app/HomeScreen";
 import ProfileScreen from "../screens/app/ProfileScreen";
 import PaymentsScreen from "../screens/app/PaymentsScreen";
 import ScheduleScreen from "../screens/app/ScheduleScreen";
-import AdminDashboardScreen from "../screens/app/AdminDashboardScreen";
 import SupportScreen from "../screens/app/SupportScreen";
+import AdminStack from "./AdminStack";
 import { useAuth } from "../hooks/useAuth";
 
 const Tab = createBottomTabNavigator();
@@ -56,7 +56,7 @@ export default function AppTabs() {
       <Tab.Screen name="Agenda" component={ScheduleScreen} />
       <Tab.Screen name="Soporte" component={SupportScreen} />
 
-      {isAdmin && <Tab.Screen name="Admin" component={AdminDashboardScreen} />}
+      {isAdmin && <Tab.Screen name="Admin" component={AdminStack} />}
 
       <Tab.Screen name="Perfil" component={ProfileScreen} />
     </Tab.Navigator>

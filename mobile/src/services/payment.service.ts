@@ -33,12 +33,26 @@ export const updatePaymentStatusRequest = async (
 };
 
 export const uploadPaymentProofRequest = async (
-  id: string,
-  proofUrl: string
+  paymentId: string,
+  imageUri: string
 ) => {
-  const response = await api.patch(`/api/payments/${id}/proof`, {
-    proofUrl,
-  });
+  const formData = new FormData();
+
+  formData.append("proof", {
+    uri: imageUri,
+    name: "payment-proof.jpg",
+    type: "image/jpeg",
+  } as any);
+
+  const response = await api.patch(
+    `/api/payments/${paymentId}/proof`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
 
   return response.data;
 };

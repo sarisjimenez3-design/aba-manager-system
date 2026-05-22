@@ -5,6 +5,7 @@ import {
   getMyProfile,
   getUserById,
   updateMyProfile,
+  getAthletes
 } from "../services/user.service";
 import { AppError } from "../utils/app-error";
 import { validateUpdateProfileInput } from "../validators/user.validator";
@@ -126,6 +127,24 @@ export const createInternal = async (
       success: true,
       message: "Usuario interno creado correctamente",
       data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAthletesController = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const athletes = await getAthletes();
+
+    res.json({
+      success: true,
+      message: "Deportistas obtenidos correctamente",
+      data: athletes,
     });
   } catch (error) {
     next(error);

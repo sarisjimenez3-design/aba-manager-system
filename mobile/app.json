@@ -15,6 +15,15 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-notifications"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b7a0fc69-8b31-4c24-ab49-a73929798e2c"
+      }
+    },
+    "owner": "sarajimenez"
   }
 }

@@ -5,6 +5,7 @@ import {
   getUsers,
   updateMe,
   createInternal,
+  getAthletesController
 } from "../controllers/user.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { roleMiddleware } from "../middlewares/role.middleware";
@@ -52,6 +53,12 @@ router.put("/me", authMiddleware, updateMe);
  */
 router.get("/", authMiddleware, roleMiddleware(["ADMIN"]), getUsers);
 
+router.get(
+  "/athletes",
+  authMiddleware,
+  roleMiddleware(["ADMIN"]),
+  getAthletesController
+);
 /**
  * @swagger
  * /api/users/{id}:

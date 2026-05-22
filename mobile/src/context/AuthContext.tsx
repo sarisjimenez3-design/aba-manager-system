@@ -1,8 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useEffect, useState } from "react";
 import { loginRequest } from "../services/auth.service";
+import { saveExpoPushTokenRequest } from "../services/notification.service";
 import { getMyProfileRequest } from "../services/user.service";
 import { User } from "../types/auth.types";
+import { registerForPushNotificationsAsync } from "../utils/registerForPushNotifications";
 
 interface AuthContextProps {
   user: User | null;
@@ -22,6 +24,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const registerPushToken = async () => {
+    try {
+      const expoPushToken = await registerForPushNotificationsAsync();
+
+      if (expoPushToken) {
+        await saveExpoPushTokenRequest(expoPushToken);
+      }
+    } catch (error) {
+      console.log("REGISTER PUSH TOKEN ERROR:", error);
+    }
+  };
+
   useEffect(() => {
     const loadSession = async () => {
       try {
@@ -31,6 +45,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (storedToken && storedUser) {
           setToken(storedToken);
           setUser(JSON.parse(storedUser));
+
+          await registerPushToken();
         }
       } catch (error) {
         console.log("LOAD SESSION ERROR:", error);
@@ -58,6 +74,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       setToken(receivedToken);
       setUser(receivedUser);
+
+      await registerPushToken();
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
@@ -95,7 +113,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, isLoading, signIn, signOut, refreshProfile }}
+      value={{
+        user,
+        token,
+        isLoading,
+        signIn,
+        signOut,
+        refreshProfile,
+      }}
     >
       {children}
     </AuthContext.Provider>

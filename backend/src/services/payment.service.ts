@@ -1,5 +1,6 @@
 import prisma from "../lib/prisma";
 import { AppError } from "../utils/app-error";
+import { notifyOneUser } from "./notification.service";
 
 const MONTHLY_AMOUNT = 150000;
 
@@ -7,11 +8,13 @@ const getCurrentMonthKey = () => {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
+
   return `${year}-${month}`;
 };
 
 const getCurrentMonthDueDate = () => {
   const now = new Date();
+
   return new Date(now.getFullYear(), now.getMonth(), 5, 23, 59, 59);
 };
 
@@ -74,7 +77,9 @@ export const getMyPayments = async (userId: string) => {
         not: "APPROVED",
       },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 };
 
@@ -112,10 +117,36 @@ export const updatePaymentStatus = async (
     throw new AppError("Este pago ya fue aprobado y no puede modificarse", 400);
   }
 
-  return prisma.payment.update({
+  const updatedPayment = await prisma.payment.update({
     where: { id: paymentId },
     data: { status },
   });
+
+  if (status === "APPROVED") {
+    await notifyOneUser(
+      updatedPayment.userId,
+      "Pago aprobado",
+      "Tu comprobante de pago fue aprobado correctamente.",
+      {
+        type: "PAYMENT_APPROVED",
+        paymentId: updatedPayment.id,
+      }
+    );
+  }
+
+  if (status === "REJECTED") {
+    await notifyOneUser(
+      updatedPayment.userId,
+      "Pago rechazado",
+      "Tu comprobante fue rechazado. Por favor revisa y vuelve a enviarlo.",
+      {
+        type: "PAYMENT_REJECTED",
+        paymentId: updatedPayment.id,
+      }
+    );
+  }
+
+  return updatedPayment;
 };
 
 export const uploadPaymentProof = async (
