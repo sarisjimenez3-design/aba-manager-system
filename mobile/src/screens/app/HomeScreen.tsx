@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -12,29 +13,32 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import AppCard from "../../components/common/AppCard";
+import PrimaryButton from "../../components/common/PrimaryButton";
 import ScreenHeader from "../../components/common/ScreenHeader";
 import SectionTitle from "../../components/common/SectionTitle";
-import PrimaryButton from "../../components/common/PrimaryButton";
 import { COLORS } from "../../constants/colors";
 import { useAuth } from "../../hooks/useAuth";
 import { createPostRequest, getPostsRequest } from "../../services/post.service";
 import { getMyPaymentsRequest } from "../../services/payment.service";
 import { Post } from "../../types/post.types";
 import { Payment } from "../../types/payment.types";
+import { getImageUrl } from "../../utils/getImageUrl";
 
 export default function HomeScreen() {
   const { user } = useAuth();
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
-  const [creatingPost, setCreatingPost] = useState(false);
 
   const [activePayment, setActivePayment] = useState<Payment | null>(null);
   const [loadingPayment, setLoadingPayment] = useState(false);
 
+  const [creatingPost, setCreatingPost] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const isCoach = user?.role === "COACH";
   const isAdmin = user?.role === "ADMIN";
@@ -58,7 +62,6 @@ export default function HomeScreen() {
       if (!isPublicUser) return;
 
       setLoadingPayment(true);
-
       const response = await getMyPaymentsRequest();
       setActivePayment(response.data[0] || null);
     } catch (error) {
@@ -73,6 +76,24 @@ export default function HomeScreen() {
     loadActivePayment();
   }, [user?.role]);
 
+  const pickPostImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert("Permiso requerido", "Debes permitir acceso a tus imágenes.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+    }
+  };
+
   const handleCreatePost = async () => {
     try {
       if (!title.trim() || !content.trim()) {
@@ -85,10 +106,12 @@ export default function HomeScreen() {
       await createPostRequest({
         title: title.trim(),
         content: content.trim(),
+        imageUri: selectedImage || undefined,
       });
 
       setTitle("");
       setContent("");
+      setSelectedImage(null);
       Keyboard.dismiss();
 
       await loadPosts();
@@ -102,17 +125,6 @@ export default function HomeScreen() {
     } finally {
       setCreatingPost(false);
     }
-  };
-
-  const getPaymentStatusLabel = () => {
-    if (!activePayment) return "";
-
-    if (activePayment.status === "OVERDUE") return "En mora";
-    if (activePayment.status === "PENDING") return "Pendiente";
-    if (activePayment.status === "REJECTED") return "Rechazado";
-    if (activePayment.status === "APPROVED") return "Aprobado";
-
-    return activePayment.status;
   };
 
   return (
@@ -142,15 +154,17 @@ export default function HomeScreen() {
                 ) : activePayment ? (
                   <>
                     <Text
-                      style={[
-                        styles.paymentStatus,
-                        activePayment.status === "OVERDUE" &&
-                          styles.paymentOverdue,
-                        activePayment.status === "REJECTED" &&
-                          styles.paymentRejected,
-                      ]}
+                      style={
+                        activePayment.status === "OVERDUE"
+                          ? styles.dangerText
+                          : styles.warning
+                      }
                     >
-                      {getPaymentStatusLabel()}
+                      {activePayment.status === "OVERDUE"
+                        ? "En mora"
+                        : activePayment.status === "PENDING"
+                        ? "Pendiente"
+                        : activePayment.status}
                     </Text>
 
                     <Text style={styles.text}>Mes: {activePayment.month}</Text>
@@ -181,13 +195,6 @@ export default function HomeScreen() {
                   </>
                 )}
               </AppCard>
-
-              <AppCard>
-                <Text style={styles.cardTitle}>Próximo entrenamiento</Text>
-                <Text style={styles.text}>
-                  Revisa la sección Agenda para consultar los horarios activos.
-                </Text>
-              </AppCard>
             </>
           )}
 
@@ -198,8 +205,8 @@ export default function HomeScreen() {
               <AppCard>
                 <Text style={styles.cardTitle}>Gestión deportiva</Text>
                 <Text style={styles.text}>
-                  Puedes revisar la agenda, crear entrenamientos y publicar
-                  novedades para los deportistas.
+                  Puedes crear publicaciones, revisar soporte y gestionar la
+                  agenda de entrenamientos.
                 </Text>
               </AppCard>
             </>
@@ -207,13 +214,13 @@ export default function HomeScreen() {
 
           {isAdmin && (
             <>
-              <SectionTitle title="Panel administrativo" />
+              <SectionTitle title="Resumen administrativo" />
 
               <AppCard>
-                <Text style={styles.cardTitle}>Resumen general</Text>
+                <Text style={styles.cardTitle}>Panel administrativo</Text>
                 <Text style={styles.text}>
-                  Revisa el panel Admin para ver usuarios, pagos pendientes,
-                  pagos aprobados e ingresos reales del club.
+                  Puedes gestionar pagos, soporte, publicaciones, deportistas y
+                  entrenamientos desde las secciones principales.
                 </Text>
               </AppCard>
             </>
@@ -241,6 +248,20 @@ export default function HomeScreen() {
                   style={styles.textArea}
                 />
 
+                {selectedImage ? (
+                  <Image
+                    source={{ uri: selectedImage }}
+                    style={styles.previewImage}
+                  />
+                ) : null}
+
+                <PrimaryButton
+                  title={selectedImage ? "Cambiar imagen" : "Agregar imagen"}
+                  onPress={pickPostImage}
+                />
+
+                <View style={styles.buttonSpacing} />
+
                 <PrimaryButton
                   title="Publicar"
                   onPress={handleCreatePost}
@@ -261,15 +282,36 @@ export default function HomeScreen() {
           ) : (
             posts.map((post) => (
               <AppCard key={post.id}>
-                <Text style={styles.cardTitle}>{post.title}</Text>
+                <View style={styles.postHeader}>
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>
+                      {post.author?.firstName?.charAt(0).toUpperCase() || "A"}
+                    </Text>
+                  </View>
 
-                <Text style={styles.meta}>
-                  {post.author
-                    ? `${post.author.firstName} ${post.author.lastName} · ${post.author.role}`
-                    : "Club ABA"}
-                </Text>
+                  <View style={styles.postHeaderInfo}>
+                    <Text style={styles.authorName}>
+                      {post.author
+                        ? `${post.author.firstName} ${post.author.lastName}`
+                        : "Club ABA"}
+                    </Text>
 
-                <Text style={styles.text}>{post.content}</Text>
+                    <Text style={styles.postDate}>
+                      {new Date(post.createdAt).toLocaleDateString()} ·{" "}
+                      {post.author?.role || "CLUB"}
+                    </Text>
+                  </View>
+                </View>
+
+                <Text style={styles.postTitle}>{post.title}</Text>
+                <Text style={styles.postContent}>{post.content}</Text>
+
+                {post.imageUrl ? (
+                  <Image
+                    source={{ uri: getImageUrl(post.imageUrl) }}
+                    style={styles.postImage}
+                  />
+                ) : null}
               </AppCard>
             ))
           )}
@@ -300,17 +342,17 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     lineHeight: 21,
   },
-  paymentStatus: {
+  warning: {
     color: COLORS.warning,
     fontWeight: "700",
     fontSize: 16,
     marginBottom: 8,
   },
-  paymentOverdue: {
+  dangerText: {
     color: COLORS.danger,
-  },
-  paymentRejected: {
-    color: COLORS.danger,
+    fontWeight: "700",
+    fontSize: 16,
+    marginBottom: 8,
   },
   successText: {
     color: COLORS.success,
@@ -334,9 +376,63 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
     color: COLORS.textPrimary,
   },
-  meta: {
-    color: COLORS.primaryMedium,
-    fontSize: 13,
+  previewImage: {
+    width: "100%",
+    height: 180,
+    borderRadius: 14,
+    marginBottom: 12,
+  },
+  buttonSpacing: {
+    height: 10,
+  },
+  postHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  avatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: COLORS.primaryDark,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  avatarText: {
+    color: COLORS.white,
+    fontWeight: "800",
+    fontSize: 18,
+  },
+  postHeaderInfo: {
+    flex: 1,
+  },
+  authorName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+  },
+  postDate: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  postTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: COLORS.textPrimary,
     marginBottom: 8,
+  },
+  postContent: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    lineHeight: 21,
+    marginBottom: 12,
+  },
+  postImage: {
+    width: "100%",
+    height: 220,
+    borderRadius: 16,
+    marginTop: 6,
   },
 });

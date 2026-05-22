@@ -12,19 +12,35 @@ export const getPosts = async () => {
         },
       },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 };
 
 export const createPost = async (
   authorId: string,
-  data: { title: string; content: string }
+  data: {
+    title: string;
+    content: string;
+    imageUrl?: string;
+  }
 ) => {
   const post = await prisma.post.create({
     data: {
       title: data.title,
       content: data.content,
+      imageUrl: data.imageUrl,
       authorId,
+    },
+    include: {
+      author: {
+        select: {
+          firstName: true,
+          lastName: true,
+          role: true,
+        },
+      },
     },
   });
 
@@ -40,4 +56,3 @@ export const createPost = async (
 
   return post;
 };
-

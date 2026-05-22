@@ -14,7 +14,26 @@ export const getPostsRequest = async () => {
 export const createPostRequest = async (payload: {
   title: string;
   content: string;
+  imageUri?: string;
 }) => {
-  const response = await api.post("/api/posts", payload);
+  const formData = new FormData();
+
+  formData.append("title", payload.title);
+  formData.append("content", payload.content);
+
+  if (payload.imageUri) {
+    formData.append("image", {
+      uri: payload.imageUri,
+      name: "post-image.jpg",
+      type: "image/jpeg",
+    } as any);
+  }
+
+  const response = await api.post("/api/posts", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
   return response.data;
 };
