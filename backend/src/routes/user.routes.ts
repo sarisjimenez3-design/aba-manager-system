@@ -24,7 +24,7 @@ const router = Router();
  *         description: Perfil obtenido correctamente
  */
 router.get("/me", authMiddleware, getMe);
-
+router.patch("/me", authMiddleware, updateMe);
 /**
  * @swagger
  * /api/users/me:

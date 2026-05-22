@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../constants/colors";
 import HomeScreen from "../screens/app/HomeScreen";
-import ProfileScreen from "../screens/app/ProfileScreen";
+import ProfileStack from "./ProfileStack";
 import PaymentsScreen from "../screens/app/PaymentsScreen";
 import ScheduleScreen from "../screens/app/ScheduleScreen";
 import SupportScreen from "../screens/app/SupportScreen";
@@ -58,7 +58,7 @@ export default function AppTabs() {
 
       {isAdmin && <Tab.Screen name="Admin" component={AdminStack} />}
 
-      <Tab.Screen name="Perfil" component={ProfileScreen} />
+      <Tab.Screen name="Perfil" component={ProfileStack} />
     </Tab.Navigator>
   );
 }

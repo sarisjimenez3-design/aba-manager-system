@@ -4,7 +4,7 @@ import PrimaryButton from "../../components/common/PrimaryButton";
 import { COLORS } from "../../constants/colors";
 import { useAuth } from "../../hooks/useAuth";
 
-export default function ProfileScreen() {
+export default function ProfileScreen({navigation}: any) {
   const { user, signOut, refreshProfile } = useAuth();
   const [loadingProfile, setLoadingProfile] = useState(true);
 
@@ -57,7 +57,10 @@ export default function ProfileScreen() {
             {user?.isActive ? "Activo" : "No disponible"}
           </Text>
         </View>
-
+        <PrimaryButton
+          title="Editar perfil"
+          onPress={() => navigation.navigate("EditProfile")}
+        />
         <PrimaryButton title="Cerrar sesión" onPress={signOut} />
       </View>
     </View>

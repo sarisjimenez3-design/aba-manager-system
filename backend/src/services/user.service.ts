@@ -1,9 +1,9 @@
+import { UserRole } from "@prisma/client";
 import prisma from "../lib/prisma";
 import { AppError } from "../utils/app-error";
-import { UpdateProfileInput } from "../validators/user.validator";
 import { hashPassword } from "../utils/hash";
-import { UserRole } from "@prisma/client";
 import { CreateInternalUserInput } from "../validators/internal-user.validator";
+import { UpdateProfileInput } from "../validators/user.validator";
 
 interface CreateUserByAdminInput {
   firstName: string;
@@ -14,20 +14,24 @@ interface CreateUserByAdminInput {
   role: UserRole;
 }
 
+const userPublicSelect = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  phone: true,
+  role: true,
+  isActive: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
 export const getMyProfile = async (userId: string) => {
   const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-      updatedAt: true,
+    where: {
+      id: userId,
     },
+    select: userPublicSelect,
   });
 
   if (!user) {
@@ -41,29 +45,22 @@ export const updateMyProfile = async (
   userId: string,
   data: UpdateProfileInput
 ) => {
-  const existingUser = await prisma.user.findUnique({
-    where: { id: userId },
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
   });
 
-  if (!existingUser) {
+  if (!user) {
     throw new AppError("Usuario no encontrado", 404);
   }
 
   const updatedUser = await prisma.user.update({
-    where: { id: userId },
-    data,
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      profilePhoto: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-      updatedAt: true,
+    where: {
+      id: userId,
     },
+    data,
+    select: userPublicSelect,
   });
 
   return updatedUser;
@@ -71,18 +68,7 @@ export const updateMyProfile = async (
 
 export const getAllUsers = async () => {
   return prisma.user.findMany({
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      profilePhoto: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    select: userPublicSelect,
     orderBy: {
       createdAt: "desc",
     },
@@ -92,18 +78,7 @@ export const getAllUsers = async () => {
 export const getUserById = async (id: string) => {
   const user = await prisma.user.findUnique({
     where: { id },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      profilePhoto: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    select: userPublicSelect,
   });
 
   if (!user) {
@@ -114,8 +89,10 @@ export const getUserById = async (id: string) => {
 };
 
 export const createUserByAdmin = async (data: CreateUserByAdminInput) => {
+  const normalizedEmail = data.email.trim().toLowerCase();
+
   const existingUser = await prisma.user.findUnique({
-    where: { email: data.email },
+    where: { email: normalizedEmail },
   });
 
   if (existingUser) {
@@ -126,32 +103,24 @@ export const createUserByAdmin = async (data: CreateUserByAdminInput) => {
 
   const user = await prisma.user.create({
     data: {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
+      firstName: data.firstName.trim(),
+      lastName: data.lastName.trim(),
+      email: normalizedEmail,
       passwordHash,
-      phone: data.phone,
+      phone: data.phone?.trim(),
       role: data.role,
     },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    select: userPublicSelect,
   });
 
   return user;
 };
 
 export const createInternalUser = async (data: CreateInternalUserInput) => {
+  const normalizedEmail = data.email.trim().toLowerCase();
+
   const existingUser = await prisma.user.findUnique({
-    where: { email: data.email },
+    where: { email: normalizedEmail },
   });
 
   if (existingUser) {
@@ -162,23 +131,14 @@ export const createInternalUser = async (data: CreateInternalUserInput) => {
 
   const user = await prisma.user.create({
     data: {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
+      firstName: data.firstName.trim(),
+      lastName: data.lastName.trim(),
+      email: normalizedEmail,
       passwordHash,
-      phone: data.phone,
+      phone: data.phone?.trim(),
       role: data.role,
     },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-    },
+    select: userPublicSelect,
   });
 
   return user;
@@ -187,18 +147,9 @@ export const createInternalUser = async (data: CreateInternalUserInput) => {
 export const getAthletes = async () => {
   return prisma.user.findMany({
     where: {
-      role: "ATHLETE",
+      role: UserRole.ATHLETE,
     },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-    },
+    select: userPublicSelect,
     orderBy: {
       createdAt: "desc",
     },
