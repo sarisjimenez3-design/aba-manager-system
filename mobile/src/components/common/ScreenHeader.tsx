@@ -1,7 +1,7 @@
-import React from "react";
-import { StyleSheet, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { COLORS } from "../../constants/colors";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { useTheme } from "../../hooks/useTheme";
 
 interface Props {
   title: string;
@@ -9,34 +9,41 @@ interface Props {
 }
 
 export default function ScreenHeader({ title, subtitle }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <LinearGradient
-      colors={[COLORS.primaryLight, COLORS.primaryDark]}
+      colors={[colors.primaryLight, colors.primaryDark]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
       style={styles.header}
     >
       <Text style={styles.title}>{title}</Text>
+
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
     </LinearGradient>
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    height: 125,
-    justifyContent: "flex-end",
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  title: {
-    color: COLORS.white,
-    fontSize: 28,
-    fontWeight: "700",
-  },
-  subtitle: {
-    color: COLORS.textLight,
-    fontSize: 14,
-    marginTop: 4,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    header: {
+      paddingTop: 70,
+      paddingHorizontal: 26,
+      paddingBottom: 30,
+      borderBottomLeftRadius: 28,
+      borderBottomRightRadius: 28,
+    },
+    title: {
+      fontSize: 34,
+      fontWeight: "800",
+      color: "#FFFFFF",
+    },
+    subtitle: {
+      color: "#FFFFFF",
+      opacity: 0.9,
+      fontSize: 16,
+      marginTop: 8,
+    },
+  });

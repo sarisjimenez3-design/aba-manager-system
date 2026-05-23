@@ -18,8 +18,8 @@ import AppCard from "../../components/common/AppCard";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import ScreenHeader from "../../components/common/ScreenHeader";
 import SectionTitle from "../../components/common/SectionTitle";
-import { COLORS } from "../../constants/colors";
 import { useAuth } from "../../hooks/useAuth";
+import { useTheme } from "../../hooks/useTheme";
 import { createPostRequest, getPostsRequest } from "../../services/post.service";
 import { getMyPaymentsRequest } from "../../services/payment.service";
 import { Post } from "../../types/post.types";
@@ -28,6 +28,8 @@ import { getImageUrl } from "../../utils/getImageUrl";
 
 export default function HomeScreen() {
   const { user } = useAuth();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
@@ -48,6 +50,7 @@ export default function HomeScreen() {
   const loadPosts = async () => {
     try {
       setLoadingPosts(true);
+
       const response = await getPostsRequest();
       setPosts(response.data);
     } catch (error) {
@@ -62,6 +65,7 @@ export default function HomeScreen() {
       if (!isPublicUser) return;
 
       setLoadingPayment(true);
+
       const response = await getMyPaymentsRequest();
       setActivePayment(response.data[0] || null);
     } catch (error) {
@@ -168,12 +172,16 @@ export default function HomeScreen() {
                     </Text>
 
                     <Text style={styles.text}>Mes: {activePayment.month}</Text>
+
                     <Text style={styles.text}>
-                      Valor: ${activePayment.amount} COP
+                      Valor: ${activePayment.amount.toLocaleString("es-CO")} COP
                     </Text>
+
                     <Text style={styles.text}>
                       Fecha límite:{" "}
-                      {new Date(activePayment.dueDate).toLocaleDateString()}
+                      {new Date(activePayment.dueDate).toLocaleDateString(
+                        "es-CO"
+                      )}
                     </Text>
 
                     {activePayment.proofUrl ? (
@@ -191,6 +199,7 @@ export default function HomeScreen() {
                     <Text style={styles.successText}>
                       No tienes pagos pendientes
                     </Text>
+
                     <Text style={styles.text}>Tu mensualidad está al día.</Text>
                   </>
                 )}
@@ -233,7 +242,7 @@ export default function HomeScreen() {
               <AppCard>
                 <TextInput
                   placeholder="Título"
-                  placeholderTextColor={COLORS.textSecondary}
+                  placeholderTextColor={colors.inputPlaceholder}
                   value={title}
                   onChangeText={setTitle}
                   style={styles.input}
@@ -241,7 +250,7 @@ export default function HomeScreen() {
 
                 <TextInput
                   placeholder="Contenido"
-                  placeholderTextColor={COLORS.textSecondary}
+                  placeholderTextColor={colors.inputPlaceholder}
                   value={content}
                   onChangeText={setContent}
                   multiline
@@ -252,6 +261,7 @@ export default function HomeScreen() {
                   <Image
                     source={{ uri: selectedImage }}
                     style={styles.previewImage}
+                    resizeMode="cover"
                   />
                 ) : null}
 
@@ -274,53 +284,54 @@ export default function HomeScreen() {
           <SectionTitle title="Publicaciones del club" />
 
           {loadingPosts ? (
-            <ActivityIndicator color={COLORS.primaryMedium} size="large" />
+            <ActivityIndicator color={colors.primaryMedium} size="large" />
           ) : posts.length === 0 ? (
             <AppCard>
               <Text style={styles.text}>Aún no hay publicaciones.</Text>
             </AppCard>
           ) : (
-            posts.map((post) => (
-              <AppCard key={post.id}>
-                <View style={styles.postHeader}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>
-                      {post.author?.firstName?.charAt(0).toUpperCase() || "A"}
-                    </Text>
+            posts.map((post) => {
+              const imageUri = getImageUrl(post.imageUrl);
+
+              return (
+                <AppCard key={post.id}>
+                  <View style={styles.postHeader}>
+                    <View style={styles.avatar}>
+                      <Text style={styles.avatarText}>
+                        {post.author?.firstName?.charAt(0).toUpperCase() ||
+                          "A"}
+                      </Text>
+                    </View>
+
+                    <View style={styles.postHeaderInfo}>
+                      <Text style={styles.authorName}>
+                        {post.author
+                          ? `${post.author.firstName} ${post.author.lastName}`
+                          : "Club ABA"}
+                      </Text>
+
+                      <Text style={styles.postDate}>
+                        {new Date(post.createdAt).toLocaleDateString(
+                          "es-CO"
+                        )}{" "}
+                        · {post.author?.role || "CLUB"}
+                      </Text>
+                    </View>
                   </View>
 
-                  <View style={styles.postHeaderInfo}>
-                    <Text style={styles.authorName}>
-                      {post.author
-                        ? `${post.author.firstName} ${post.author.lastName}`
-                        : "Club ABA"}
-                    </Text>
+                  <Text style={styles.postTitle}>{post.title}</Text>
+                  <Text style={styles.postContent}>{post.content}</Text>
 
-                    <Text style={styles.postDate}>
-                      {new Date(post.createdAt).toLocaleDateString()} ·{" "}
-                      {post.author?.role || "CLUB"}
-                    </Text>
-                  </View>
-                </View>
-
-                <Text style={styles.postTitle}>{post.title}</Text>
-                <Text style={styles.postContent}>{post.content}</Text>
-
-                {(() => {
-  const imageUri = getImageUrl(post.imageUrl);
-
-  if (!imageUri) return null;
-
-  return (
-    <Image
-      source={{ uri: imageUri }}
-      style={styles.postImage}
-      resizeMode="cover"
-    />
-  );
-})()}
-              </AppCard>
-            ))
+                  {imageUri ? (
+                    <Image
+                      source={{ uri: imageUri }}
+                      style={styles.postImage}
+                      resizeMode="cover"
+                    />
+                  ) : null}
+                </AppCard>
+              );
+            })
           )}
         </ScrollView>
       </KeyboardAvoidingView>
@@ -328,118 +339,119 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  content: {
-    padding: 18,
-    paddingBottom: 130,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
-    marginBottom: 8,
-  },
-  text: {
-    color: COLORS.textSecondary,
-    fontSize: 15,
-    marginBottom: 4,
-    lineHeight: 21,
-  },
-  warning: {
-    color: COLORS.warning,
-    fontWeight: "700",
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  dangerText: {
-    color: COLORS.danger,
-    fontWeight: "700",
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  successText: {
-    color: COLORS.success,
-    fontWeight: "700",
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: COLORS.background,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 10,
-    color: COLORS.textPrimary,
-  },
-  textArea: {
-    backgroundColor: COLORS.background,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 14,
-    height: 100,
-    textAlignVertical: "top",
-    color: COLORS.textPrimary,
-  },
-  previewImage: {
-    width: "100%",
-    height: 180,
-    borderRadius: 14,
-    marginBottom: 12,
-  },
-  buttonSpacing: {
-    height: 10,
-  },
-  postHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  avatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: COLORS.primaryDark,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  avatarText: {
-    color: COLORS.white,
-    fontWeight: "800",
-    fontSize: 18,
-  },
-  postHeaderInfo: {
-    flex: 1,
-  },
-  authorName: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
-  },
-  postDate: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  postTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: COLORS.textPrimary,
-    marginBottom: 8,
-  },
-  postContent: {
-    fontSize: 15,
-    color: COLORS.textSecondary,
-    lineHeight: 21,
-    marginBottom: 12,
-  },
-  postImage: {
-    width: "100%",
-    height: 220,
-    borderRadius: 16,
-    marginTop: 6,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      padding: 18,
+      paddingBottom: 130,
+    },
+    cardTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginBottom: 8,
+    },
+    text: {
+      color: colors.textSecondary,
+      fontSize: 15,
+      marginBottom: 4,
+      lineHeight: 21,
+    },
+    warning: {
+      color: colors.warning,
+      fontWeight: "700",
+      fontSize: 16,
+      marginBottom: 8,
+    },
+    dangerText: {
+      color: colors.danger,
+      fontWeight: "700",
+      fontSize: 16,
+      marginBottom: 8,
+    },
+    successText: {
+      color: colors.success,
+      fontWeight: "700",
+      fontSize: 16,
+      marginBottom: 8,
+    },
+    input: {
+      backgroundColor: colors.inputBackground,
+      borderRadius: 12,
+      padding: 12,
+      marginBottom: 10,
+      color: colors.textPrimary,
+    },
+    textArea: {
+      backgroundColor: colors.inputBackground,
+      borderRadius: 12,
+      padding: 12,
+      marginBottom: 14,
+      height: 100,
+      textAlignVertical: "top",
+      color: colors.textPrimary,
+    },
+    previewImage: {
+      width: "100%",
+      height: 180,
+      borderRadius: 14,
+      marginBottom: 12,
+    },
+    buttonSpacing: {
+      height: 10,
+    },
+    postHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 12,
+    },
+    avatar: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor: colors.primaryDark,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 10,
+    },
+    avatarText: {
+      color: "#FFFFFF",
+      fontWeight: "800",
+      fontSize: 18,
+    },
+    postHeaderInfo: {
+      flex: 1,
+    },
+    authorName: {
+      fontSize: 15,
+      fontWeight: "700",
+      color: colors.textPrimary,
+    },
+    postDate: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    postTitle: {
+      fontSize: 18,
+      fontWeight: "800",
+      color: colors.textPrimary,
+      marginBottom: 8,
+    },
+    postContent: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      lineHeight: 21,
+      marginBottom: 12,
+    },
+    postImage: {
+      width: "100%",
+      height: 220,
+      borderRadius: 16,
+      marginTop: 6,
+    },
+  });

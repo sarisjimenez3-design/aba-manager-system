@@ -1,3 +1,4 @@
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import {
   ActivityIndicator,
@@ -5,8 +6,7 @@ import {
   Text,
   TouchableOpacity,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { COLORS } from "../../constants/colors";
+import { useTheme } from "../../hooks/useTheme";
 
 interface Props {
   title: string;
@@ -21,11 +21,14 @@ export default function PrimaryButton({
   loading = false,
   disabled = false,
 }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   const isDisabled = loading || disabled;
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       onPress={onPress}
       disabled={isDisabled}
       style={isDisabled ? styles.disabledWrapper : undefined}
@@ -33,13 +36,13 @@ export default function PrimaryButton({
       <LinearGradient
         colors={
           isDisabled
-            ? [COLORS.textSecondary, COLORS.textSecondary]
-            : [COLORS.primaryLight, COLORS.primaryDark]
+            ? [colors.textSecondary, colors.textSecondary]
+            : [colors.primaryLight, colors.primaryDark]
         }
         style={styles.button}
       >
         {loading ? (
-          <ActivityIndicator color={COLORS.white} />
+          <ActivityIndicator color="#FFFFFF" />
         ) : (
           <Text style={styles.text}>{title}</Text>
         )}
@@ -48,19 +51,20 @@ export default function PrimaryButton({
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    height: 52,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  text: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  disabledWrapper: {
-    opacity: 0.65,
-  },
-});
+const createStyles = (_colors: any) =>
+  StyleSheet.create({
+    button: {
+      height: 52,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    text: {
+      color: "#FFFFFF",
+      fontSize: 16,
+      fontWeight: "700",
+    },
+    disabledWrapper: {
+      opacity: 0.7,
+    },
+  });

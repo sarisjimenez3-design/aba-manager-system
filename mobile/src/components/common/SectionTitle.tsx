@@ -1,17 +1,25 @@
 import React from "react";
 import { StyleSheet, Text } from "react-native";
-import { COLORS } from "../../constants/colors";
+import { useTheme } from "../../hooks/useTheme";
 
-export default function SectionTitle({ title }: { title: string }) {
+interface Props {
+  title: string;
+}
+
+export default function SectionTitle({ title }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return <Text style={styles.title}>{title}</Text>;
 }
 
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 21,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
-    marginBottom: 12,
-    marginTop: 8,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    title: {
+      fontSize: 22,
+      fontWeight: "800",
+      color: colors.textPrimary,
+      marginBottom: 14,
+      marginTop: 10,
+    },
+  });

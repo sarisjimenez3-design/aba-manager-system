@@ -19,8 +19,8 @@ import AppCard from "../../components/common/AppCard";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import ScreenHeader from "../../components/common/ScreenHeader";
 import SectionTitle from "../../components/common/SectionTitle";
-import { COLORS } from "../../constants/colors";
 import { useAuth } from "../../hooks/useAuth";
+import { useTheme } from "../../hooks/useTheme";
 import {
   getAllPaymentsRequest,
   getMyPaymentsRequest,
@@ -48,6 +48,8 @@ const statusOptions: { label: string; value: PaymentStatus | "ALL" }[] = [
 
 export default function PaymentsScreen() {
   const { user } = useAuth();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
 
   const [payments, setPayments] = useState<Payment[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
@@ -195,7 +197,7 @@ export default function PaymentsScreen() {
             <>
               <TextInput
                 placeholder="Buscar por nombre, correo o teléfono"
-                placeholderTextColor={COLORS.textSecondary}
+                placeholderTextColor={colors.inputPlaceholder}
                 value={search}
                 onChangeText={setSearch}
                 style={styles.input}
@@ -249,7 +251,7 @@ export default function PaymentsScreen() {
           )}
 
           {loading ? (
-            <ActivityIndicator color={COLORS.primaryMedium} size="large" />
+            <ActivityIndicator color={colors.primaryMedium} size="large" />
           ) : payments.length === 0 ? (
             <AppCard>
               <Text style={styles.text}>
@@ -259,91 +261,92 @@ export default function PaymentsScreen() {
               </Text>
             </AppCard>
           ) : (
-            payments.map((payment) => (
-              <AppCard key={payment.id}>
-                {isAdmin && payment.user && (
-                  <>
-                    <Text style={styles.userName}>
-                      {payment.user.firstName} {payment.user.lastName}
+            payments.map((payment) => {
+              const proofImageUri = getImageUrl(payment.proofUrl);
+
+              return (
+                <AppCard key={payment.id}>
+                  {isAdmin && payment.user && (
+                    <>
+                      <Text style={styles.userName}>
+                        {payment.user.firstName} {payment.user.lastName}
+                      </Text>
+
+                      <Text style={styles.text}>{payment.user.email}</Text>
+
+                      <Text style={styles.text}>Rol: {payment.user.role}</Text>
+                    </>
+                  )}
+
+                  <Text style={styles.month}>{payment.month}</Text>
+
+                  <Text style={styles.amount}>
+                    ${payment.amount.toLocaleString("es-CO")} COP
+                  </Text>
+
+                  <View style={styles.statusBadge}>
+                    <Text style={styles.statusBadgeText}>
+                      {statusLabels[payment.status]}
                     </Text>
-
-                    <Text style={styles.text}>{payment.user.email}</Text>
-
-                    <Text style={styles.text}>Rol: {payment.user.role}</Text>
-                  </>
-                )}
-
-                <Text style={styles.month}>{payment.month}</Text>
-
-                <Text style={styles.amount}>
-                  ${payment.amount.toLocaleString("es-CO")} COP
-                </Text>
-
-                <View style={styles.statusBadge}>
-                  <Text style={styles.statusBadgeText}>
-                    {statusLabels[payment.status]}
-                  </Text>
-                </View>
-
-                <Text style={styles.text}>
-                  Fecha límite:{" "}
-                  {new Date(payment.dueDate).toLocaleDateString("es-CO")}
-                </Text>
-
-                {payment.proofUrl &&
-getImageUrl(payment.proofUrl) ? (
-  <>
-    <Text style={styles.proof}>Comprobante enviado</Text>
-
-    <Image
-      source={{
-        uri: getImageUrl(payment.proofUrl)!,
-      }}
-      style={styles.proofImage}
-      resizeMode="cover"
-    />
-  </>
-) : (
-  <Text style={styles.noProof}>Sin comprobante enviado</Text>
-)}
-
-                {!isAdmin && payment.status !== "APPROVED" && (
-                  <PrimaryButton
-                    title="Subir imagen del comprobante"
-                    onPress={() => handlePickProofImage(payment.id)}
-                    loading={uploadingId === payment.id}
-                  />
-                )}
-
-                {isAdmin && payment.status !== "APPROVED" && (
-                  <View style={styles.actions}>
-                    <PrimaryButton
-                      title="Aprobar"
-                      onPress={() =>
-                        handleChangeStatus(payment.id, "APPROVED")
-                      }
-                      loading={updatingId === payment.id}
-                    />
-
-                    <View style={{ height: 10 }} />
-
-                    <PrimaryButton
-                      title="Rechazar"
-                      onPress={() =>
-                        handleChangeStatus(payment.id, "REJECTED")
-                      }
-                      loading={updatingId === payment.id}
-                    />
                   </View>
-                )}
 
-                {isAdmin && payment.status === "APPROVED" && (
-                  <Text style={styles.approvedText}>
-                    Pago aprobado correctamente
+                  <Text style={styles.text}>
+                    Fecha límite:{" "}
+                    {new Date(payment.dueDate).toLocaleDateString("es-CO")}
                   </Text>
-                )}
-              </AppCard>
-            ))
+
+                  {proofImageUri ? (
+                    <>
+                      <Text style={styles.proof}>Comprobante enviado</Text>
+
+                      <Image
+                        source={{ uri: proofImageUri }}
+                        style={styles.proofImage}
+                        resizeMode="cover"
+                      />
+                    </>
+                  ) : (
+                    <Text style={styles.noProof}>Sin comprobante enviado</Text>
+                  )}
+
+                  {!isAdmin && payment.status !== "APPROVED" && (
+                    <PrimaryButton
+                      title="Subir imagen del comprobante"
+                      onPress={() => handlePickProofImage(payment.id)}
+                      loading={uploadingId === payment.id}
+                    />
+                  )}
+
+                  {isAdmin && payment.status !== "APPROVED" && (
+                    <View style={styles.actions}>
+                      <PrimaryButton
+                        title="Aprobar"
+                        onPress={() =>
+                          handleChangeStatus(payment.id, "APPROVED")
+                        }
+                        loading={updatingId === payment.id}
+                      />
+
+                      <View style={{ height: 10 }} />
+
+                      <PrimaryButton
+                        title="Rechazar"
+                        onPress={() =>
+                          handleChangeStatus(payment.id, "REJECTED")
+                        }
+                        loading={updatingId === payment.id}
+                      />
+                    </View>
+                  )}
+
+                  {isAdmin && payment.status === "APPROVED" && (
+                    <Text style={styles.approvedText}>
+                      Pago aprobado correctamente
+                    </Text>
+                  )}
+                </AppCard>
+              );
+            })
           )}
 
           {isAdmin && meta && meta.totalPages > 1 && (
@@ -375,130 +378,131 @@ getImageUrl(payment.proofUrl) ? (
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  content: {
-    padding: 18,
-    paddingBottom: 130,
-  },
-  input: {
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-    padding: 14,
-    color: COLORS.textPrimary,
-    marginBottom: 12,
-  },
-  actionsRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 12,
-  },
-  actionButton: {
-    flex: 1,
-  },
-  filtersContainer: {
-    marginBottom: 12,
-  },
-  filterChip: {
-    paddingVertical: 9,
-    paddingHorizontal: 14,
-    backgroundColor: COLORS.white,
-    borderRadius: 18,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  filterChipActive: {
-    backgroundColor: COLORS.primaryMedium,
-    borderColor: COLORS.primaryMedium,
-  },
-  filterChipText: {
-    color: COLORS.textSecondary,
-    fontWeight: "600",
-  },
-  filterChipTextActive: {
-    color: COLORS.white,
-  },
-  resultText: {
-    color: COLORS.textSecondary,
-    fontWeight: "600",
-    marginBottom: 12,
-  },
-  userName: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
-    marginBottom: 4,
-  },
-  month: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
-    marginTop: 10,
-    marginBottom: 6,
-  },
-  amount: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: COLORS.primaryMedium,
-    marginBottom: 8,
-  },
-  statusBadge: {
-    alignSelf: "flex-start",
-    backgroundColor: COLORS.background,
-    borderRadius: 20,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    marginBottom: 10,
-  },
-  statusBadgeText: {
-    color: COLORS.primaryMedium,
-    fontWeight: "700",
-  },
-  text: {
-    color: COLORS.textSecondary,
-    fontSize: 15,
-    marginBottom: 4,
-  },
-  proof: {
-    color: COLORS.primaryMedium,
-    fontSize: 14,
-    fontWeight: "600",
-    marginTop: 8,
-    marginBottom: 8,
-  },
-  proofImage: {
-    width: "100%",
-    height: 190,
-    borderRadius: 16,
-    marginBottom: 12,
-    backgroundColor: COLORS.background,
-  },
-  noProof: {
-    color: COLORS.textSecondary,
-    fontSize: 14,
-    fontStyle: "italic",
-    marginTop: 8,
-    marginBottom: 8,
-  },
-  actions: {
-    marginTop: 12,
-  },
-  approvedText: {
-    color: COLORS.success,
-    fontWeight: "700",
-    marginTop: 10,
-  },
-  pagination: {
-    marginTop: 14,
-    gap: 10,
-  },
-  pageText: {
-    textAlign: "center",
-    color: COLORS.textSecondary,
-    fontWeight: "600",
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      padding: 18,
+      paddingBottom: 130,
+    },
+    input: {
+      backgroundColor: colors.inputBackground,
+      borderRadius: 14,
+      padding: 14,
+      color: colors.textPrimary,
+      marginBottom: 12,
+    },
+    actionsRow: {
+      flexDirection: "row",
+      gap: 10,
+      marginBottom: 12,
+    },
+    actionButton: {
+      flex: 1,
+    },
+    filtersContainer: {
+      marginBottom: 12,
+    },
+    filterChip: {
+      paddingVertical: 9,
+      paddingHorizontal: 14,
+      backgroundColor: colors.card,
+      borderRadius: 18,
+      marginRight: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    filterChipActive: {
+      backgroundColor: colors.primaryMedium,
+      borderColor: colors.primaryMedium,
+    },
+    filterChipText: {
+      color: colors.textSecondary,
+      fontWeight: "600",
+    },
+    filterChipTextActive: {
+      color: "#FFFFFF",
+    },
+    resultText: {
+      color: colors.textSecondary,
+      fontWeight: "600",
+      marginBottom: 12,
+    },
+    userName: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginBottom: 4,
+    },
+    month: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginTop: 10,
+      marginBottom: 6,
+    },
+    amount: {
+      fontSize: 24,
+      fontWeight: "800",
+      color: colors.primaryMedium,
+      marginBottom: 8,
+    },
+    statusBadge: {
+      alignSelf: "flex-start",
+      backgroundColor: colors.inputBackground,
+      borderRadius: 20,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      marginBottom: 10,
+    },
+    statusBadgeText: {
+      color: colors.primaryMedium,
+      fontWeight: "700",
+    },
+    text: {
+      color: colors.textSecondary,
+      fontSize: 15,
+      marginBottom: 4,
+    },
+    proof: {
+      color: colors.primaryMedium,
+      fontSize: 14,
+      fontWeight: "600",
+      marginTop: 8,
+      marginBottom: 8,
+    },
+    proofImage: {
+      width: "100%",
+      height: 190,
+      borderRadius: 16,
+      marginBottom: 12,
+      backgroundColor: colors.inputBackground,
+    },
+    noProof: {
+      color: colors.textSecondary,
+      fontSize: 14,
+      fontStyle: "italic",
+      marginTop: 8,
+      marginBottom: 8,
+    },
+    actions: {
+      marginTop: 12,
+    },
+    approvedText: {
+      color: colors.success,
+      fontWeight: "700",
+      marginTop: 10,
+    },
+    pagination: {
+      marginTop: 14,
+      gap: 10,
+    },
+    pageText: {
+      textAlign: "center",
+      color: colors.textSecondary,
+      fontWeight: "600",
+    },
+  });

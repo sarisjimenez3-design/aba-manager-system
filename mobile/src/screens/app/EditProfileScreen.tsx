@@ -12,12 +12,15 @@ import {
 import CustomInput from "../../components/common/CustomInput";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import ScreenHeader from "../../components/common/ScreenHeader";
-import { COLORS } from "../../constants/colors";
 import { useAuth } from "../../hooks/useAuth";
+import { useTheme } from "../../hooks/useTheme";
 import { updateMyProfileRequest } from "../../services/user.service";
 
 export default function EditProfileScreen({ navigation }: any) {
   const { user, refreshProfile } = useAuth();
+  const { colors } = useTheme();
+
+  const styles = createStyles(colors);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -40,7 +43,10 @@ export default function EditProfileScreen({ navigation }: any) {
       }
 
       if (phone.trim() && phone.trim().length < 7) {
-        Alert.alert("Teléfono inválido", "El teléfono debe tener mínimo 7 caracteres.");
+        Alert.alert(
+          "Teléfono inválido",
+          "El teléfono debe tener mínimo 7 caracteres."
+        );
         return;
       }
 
@@ -63,15 +69,15 @@ export default function EditProfileScreen({ navigation }: any) {
         },
       ]);
     } catch (error: any) {
-  console.log("EDIT PROFILE ERROR COMPLETO:", error);
-  console.log("EDIT PROFILE RESPONSE:", error?.response?.data);
-  console.log("EDIT PROFILE STATUS:", error?.response?.status);
-  console.log("EDIT PROFILE MESSAGE:", error?.message);
+      console.log("EDIT PROFILE ERROR COMPLETO:", error);
+      console.log("EDIT PROFILE RESPONSE:", error?.response?.data);
+      console.log("EDIT PROFILE STATUS:", error?.response?.status);
+      console.log("EDIT PROFILE MESSAGE:", error?.message);
 
-  Alert.alert(
-    "Error",
-    error?.response?.data?.message || "No se pudo actualizar el perfil"
-  );
+      Alert.alert(
+        "Error",
+        error?.response?.data?.message || "No se pudo actualizar el perfil"
+      );
     } finally {
       setLoading(false);
     }
@@ -112,6 +118,7 @@ export default function EditProfileScreen({ navigation }: any) {
               value={phone}
               onChangeText={setPhone}
               icon="call-outline"
+              keyboardType="phone-pad"
             />
 
             <PrimaryButton
@@ -126,16 +133,17 @@ export default function EditProfileScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  content: {
-    padding: 18,
-    paddingBottom: 120,
-  },
-  form: {
-    gap: 4,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      padding: 18,
+      paddingBottom: 120,
+    },
+    form: {
+      gap: 4,
+    },
+  });

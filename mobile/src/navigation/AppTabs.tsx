@@ -1,18 +1,19 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "../constants/colors";
 import HomeScreen from "../screens/app/HomeScreen";
 import ProfileStack from "./ProfileStack";
 import PaymentsScreen from "../screens/app/PaymentsScreen";
 import ScheduleStack from "./ScheduleStack";
 import SupportScreen from "../screens/app/SupportScreen";
 import AdminStack from "./AdminStack";
+import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../hooks/useAuth";
 
 const Tab = createBottomTabNavigator();
 
 export default function AppTabs() {
   const { user } = useAuth();
+  const { colors } = useTheme();
 
   const isAdmin = user?.role === "ADMIN";
   const canSeePayments =
@@ -22,17 +23,24 @@ export default function AppTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: COLORS.primaryMedium,
-        tabBarInactiveTintColor: COLORS.textSecondary,
+
+        tabBarActiveTintColor: colors.primaryMedium,
+        tabBarInactiveTintColor: colors.textSecondary,
+
         tabBarStyle: {
-          height: 65,
+          height: 68,
           paddingTop: 6,
           paddingBottom: 8,
-          backgroundColor: COLORS.white,
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
         },
+
         tabBarLabelStyle: {
           fontSize: 11,
+          fontWeight: "600",
         },
+
         tabBarIcon: ({ color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = "home-outline";
 
@@ -54,6 +62,7 @@ export default function AppTabs() {
       )}
 
       <Tab.Screen name="Agenda" component={ScheduleStack} />
+
       <Tab.Screen name="Soporte" component={SupportScreen} />
 
       {isAdmin && <Tab.Screen name="Admin" component={AdminStack} />}

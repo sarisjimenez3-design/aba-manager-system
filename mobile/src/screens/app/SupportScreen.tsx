@@ -16,8 +16,8 @@ import PrimaryButton from "../../components/common/PrimaryButton";
 import ScreenHeader from "../../components/common/ScreenHeader";
 import SectionTitle from "../../components/common/SectionTitle";
 import CustomInput from "../../components/common/CustomInput";
-import { COLORS } from "../../constants/colors";
 import { useAuth } from "../../hooks/useAuth";
+import { useTheme } from "../../hooks/useTheme";
 import {
   answerSupportTicketRequest,
   createSupportTicketRequest,
@@ -29,6 +29,8 @@ import { SupportTicket } from "../../types/support.types";
 
 export default function SupportScreen() {
   const { user } = useAuth();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
 
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -204,7 +206,7 @@ export default function SupportScreen() {
 
               <TextInput
                 placeholder="Escribe tu mensaje"
-                placeholderTextColor={COLORS.textSecondary}
+                placeholderTextColor={colors.inputPlaceholder}
                 value={message}
                 onChangeText={setMessage}
                 multiline
@@ -224,7 +226,7 @@ export default function SupportScreen() {
           {canViewTickets && <SectionTitle title="Mensajes de usuarios" />}
 
           {loadingTickets ? (
-            <ActivityIndicator color={COLORS.primaryMedium} size="large" />
+            <ActivityIndicator color={colors.primaryMedium} size="large" />
           ) : tickets.length === 0 ? (
             <AppCard>
               <Text style={styles.text}>
@@ -275,7 +277,7 @@ export default function SupportScreen() {
                   <>
                     <TextInput
                       placeholder="Escribe una respuesta"
-                      placeholderTextColor={COLORS.textSecondary}
+                      placeholderTextColor={colors.inputPlaceholder}
                       value={responses[ticket.id] || ""}
                       onChangeText={(value) =>
                         setResponses((prev) => ({
@@ -327,80 +329,81 @@ export default function SupportScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  content: {
-    padding: 18,
-    paddingBottom: 130,
-  },
-  textArea: {
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-    padding: 14,
-    height: 130,
-    textAlignVertical: "top",
-    color: COLORS.textPrimary,
-    marginBottom: 16,
-  },
-  answerInput: {
-    backgroundColor: COLORS.background,
-    borderRadius: 12,
-    padding: 12,
-    minHeight: 90,
-    textAlignVertical: "top",
-    marginTop: 12,
-    marginBottom: 12,
-    color: COLORS.textPrimary,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
-    marginBottom: 6,
-  },
-  status: {
-    color: COLORS.primaryMedium,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  userInfo: {
-    color: COLORS.textSecondary,
-    fontSize: 13,
-    marginBottom: 8,
-  },
-  label: {
-    color: COLORS.textPrimary,
-    fontWeight: "700",
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  text: {
-    color: COLORS.textSecondary,
-    fontSize: 15,
-    lineHeight: 21,
-  },
-  response: {
-    color: COLORS.primaryMedium,
-    fontWeight: "600",
-    fontSize: 15,
-    lineHeight: 21,
-  },
-  pendingResponse: {
-    color: COLORS.textSecondary,
-    fontStyle: "italic",
-    marginTop: 10,
-  },
-  separator: {
-    color: COLORS.border,
-    textAlign: "center",
-    marginVertical: 12,
-  },
-  date: {
-    color: COLORS.textSecondary,
-    fontSize: 12,
-    marginTop: 10,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      padding: 18,
+      paddingBottom: 130,
+    },
+    textArea: {
+      backgroundColor: colors.inputBackground,
+      borderRadius: 14,
+      padding: 14,
+      height: 130,
+      textAlignVertical: "top",
+      color: colors.textPrimary,
+      marginBottom: 16,
+    },
+    answerInput: {
+      backgroundColor: colors.inputBackground,
+      borderRadius: 12,
+      padding: 12,
+      minHeight: 90,
+      textAlignVertical: "top",
+      marginTop: 12,
+      marginBottom: 12,
+      color: colors.textPrimary,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginBottom: 6,
+    },
+    status: {
+      color: colors.primaryMedium,
+      fontWeight: "600",
+      marginBottom: 8,
+    },
+    userInfo: {
+      color: colors.textSecondary,
+      fontSize: 13,
+      marginBottom: 8,
+    },
+    label: {
+      color: colors.textPrimary,
+      fontWeight: "700",
+      marginTop: 8,
+      marginBottom: 4,
+    },
+    text: {
+      color: colors.textSecondary,
+      fontSize: 15,
+      lineHeight: 21,
+    },
+    response: {
+      color: colors.primaryMedium,
+      fontWeight: "600",
+      fontSize: 15,
+      lineHeight: 21,
+    },
+    pendingResponse: {
+      color: colors.textSecondary,
+      fontStyle: "italic",
+      marginTop: 10,
+    },
+    separator: {
+      color: colors.border,
+      textAlign: "center",
+      marginVertical: 12,
+    },
+    date: {
+      color: colors.textSecondary,
+      fontSize: 12,
+      marginTop: 10,
+    },
+  });

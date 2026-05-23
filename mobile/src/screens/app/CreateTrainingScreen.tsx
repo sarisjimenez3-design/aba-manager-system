@@ -5,7 +5,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
+ StyleSheet,
   Text,
   TextInput,
   TouchableWithoutFeedback,
@@ -16,7 +16,7 @@ import AppCard from "../../components/common/AppCard";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import ScreenHeader from "../../components/common/ScreenHeader";
 import SectionTitle from "../../components/common/SectionTitle";
-import { COLORS } from "../../constants/colors";
+import { useTheme } from "../../hooks/useTheme";
 import { createTrainingRequest } from "../../services/training.service";
 
 const getTodayDate = () => {
@@ -32,6 +32,9 @@ const getDayName = (dateString: string) => {
 };
 
 export default function CreateTrainingScreen({ navigation }: any) {
+  const { colors, mode } = useTheme();
+  const styles = createStyles(colors);
+
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
 
   const [title, setTitle] = useState("");
@@ -80,7 +83,8 @@ export default function CreateTrainingScreen({ navigation }: any) {
     } catch (error: any) {
       Alert.alert(
         "Error",
-        error?.response?.data?.message || "No se pudo crear el entrenamiento"
+        error?.response?.data?.message ||
+          "No se pudo crear el entrenamiento"
       );
     } finally {
       setCreating(false);
@@ -106,22 +110,29 @@ export default function CreateTrainingScreen({ navigation }: any) {
 
           <AppCard>
             <Calendar
+              key={mode}
               markedDates={{
                 [selectedDate]: {
                   selected: true,
-                  selectedColor: COLORS.primaryMedium,
-                  selectedTextColor: COLORS.white,
+                  selectedColor: colors.primaryMedium,
+                  selectedTextColor: "#FFFFFF",
                 },
               }}
               onDayPress={(day: DateData) => {
                 setSelectedDate(day.dateString);
               }}
               theme={{
-                selectedDayBackgroundColor: COLORS.primaryMedium,
-                selectedDayTextColor: COLORS.white,
-                todayTextColor: COLORS.primaryMedium,
-                arrowColor: COLORS.primaryMedium,
-                monthTextColor: COLORS.textPrimary,
+                calendarBackground: colors.card,
+                selectedDayBackgroundColor: colors.primaryMedium,
+                selectedDayTextColor: "#FFFFFF",
+                todayTextColor: colors.primaryMedium,
+                arrowColor: colors.primaryMedium,
+                monthTextColor: colors.textPrimary,
+                dayTextColor: colors.textPrimary,
+                textDisabledColor: colors.textSecondary,
+                textSectionTitleColor: colors.textSecondary,
+                dotColor: colors.primaryMedium,
+                selectedDotColor: "#FFFFFF",
                 textMonthFontWeight: "700",
                 textDayFontWeight: "500",
                 textDayHeaderFontWeight: "700",
@@ -138,7 +149,7 @@ export default function CreateTrainingScreen({ navigation }: any) {
 
             <TextInput
               placeholder="Título del entrenamiento"
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={colors.inputPlaceholder}
               value={title}
               onChangeText={setTitle}
               style={styles.input}
@@ -146,7 +157,7 @@ export default function CreateTrainingScreen({ navigation }: any) {
 
             <TextInput
               placeholder="Hora. Ej: 6:00 PM"
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={colors.inputPlaceholder}
               value={hour}
               onChangeText={setHour}
               style={styles.input}
@@ -154,7 +165,7 @@ export default function CreateTrainingScreen({ navigation }: any) {
 
             <TextInput
               placeholder="Sede o lugar"
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={colors.inputPlaceholder}
               value={place}
               onChangeText={setPlace}
               style={styles.input}
@@ -162,7 +173,7 @@ export default function CreateTrainingScreen({ navigation }: any) {
 
             <TextInput
               placeholder="Categoría. Ej: Sub15"
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={colors.inputPlaceholder}
               value={category}
               onChangeText={setCategory}
               style={styles.input}
@@ -170,7 +181,7 @@ export default function CreateTrainingScreen({ navigation }: any) {
 
             <TextInput
               placeholder="Nombre del entrenador"
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={colors.inputPlaceholder}
               value={coachName}
               onChangeText={setCoachName}
               style={styles.input}
@@ -196,29 +207,30 @@ export default function CreateTrainingScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  content: {
-    padding: 18,
-    paddingBottom: 130,
-  },
-  selectedDateText: {
-    color: COLORS.primaryMedium,
-    fontWeight: "700",
-    marginBottom: 14,
-    fontSize: 15,
-  },
-  input: {
-    backgroundColor: COLORS.background,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 10,
-    color: COLORS.textPrimary,
-  },
-  cancelButton: {
-    marginTop: 12,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      padding: 18,
+      paddingBottom: 130,
+    },
+    selectedDateText: {
+      color: colors.primaryMedium,
+      fontWeight: "700",
+      marginBottom: 14,
+      fontSize: 15,
+    },
+    input: {
+      backgroundColor: colors.inputBackground,
+      borderRadius: 12,
+      padding: 12,
+      marginBottom: 10,
+      color: colors.textPrimary,
+    },
+    cancelButton: {
+      marginTop: 12,
+    },
+  });

@@ -11,12 +11,15 @@ import AppCard from "../../components/common/AppCard";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import ScreenHeader from "../../components/common/ScreenHeader";
 import SectionTitle from "../../components/common/SectionTitle";
-import { COLORS } from "../../constants/colors";
+import { useTheme } from "../../hooks/useTheme";
 import { getAthletesRequest } from "../../services/user.service";
 import { PaginationMeta } from "../../types/pagination.types";
 import { Athlete } from "../../types/user.types";
 
 export default function AthletesScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   const [athletes, setAthletes] = useState<Athlete[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
 
@@ -74,7 +77,7 @@ export default function AthletesScreen() {
 
         <TextInput
           placeholder="Buscar por nombre, correo o teléfono"
-          placeholderTextColor={COLORS.textSecondary}
+          placeholderTextColor={colors.inputPlaceholder}
           value={search}
           onChangeText={setSearch}
           style={styles.input}
@@ -93,7 +96,7 @@ export default function AthletesScreen() {
         <SectionTitle title={`Total encontrados: ${meta?.total ?? 0}`} />
 
         {loading ? (
-          <ActivityIndicator color={COLORS.primaryMedium} size="large" />
+          <ActivityIndicator color={colors.primaryMedium} size="large" />
         ) : athletes.length === 0 ? (
           <AppCard>
             <Text style={styles.text}>No hay deportistas registrados.</Text>
@@ -116,7 +119,8 @@ export default function AthletesScreen() {
               </Text>
 
               <Text style={styles.date}>
-                Registrado: {new Date(athlete.createdAt).toLocaleDateString()}
+                Registrado:{" "}
+                {new Date(athlete.createdAt).toLocaleDateString("es-CO")}
               </Text>
             </AppCard>
           ))
@@ -148,54 +152,55 @@ export default function AthletesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  content: {
-    padding: 18,
-    paddingBottom: 120,
-  },
-  input: {
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-    padding: 14,
-    color: COLORS.textPrimary,
-    marginBottom: 12,
-  },
-  actionsRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 12,
-  },
-  actionButton: {
-    flex: 1,
-  },
-  name: {
-    fontSize: 19,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
-    marginBottom: 8,
-  },
-  text: {
-    color: COLORS.textSecondary,
-    fontSize: 15,
-    marginBottom: 5,
-  },
-  date: {
-    color: COLORS.primaryMedium,
-    fontSize: 13,
-    marginTop: 8,
-    fontWeight: "600",
-  },
-  pagination: {
-    marginTop: 14,
-    gap: 10,
-  },
-  pageText: {
-    textAlign: "center",
-    color: COLORS.textSecondary,
-    fontWeight: "600",
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      padding: 18,
+      paddingBottom: 120,
+    },
+    input: {
+      backgroundColor: colors.inputBackground,
+      borderRadius: 14,
+      padding: 14,
+      color: colors.textPrimary,
+      marginBottom: 12,
+    },
+    actionsRow: {
+      flexDirection: "row",
+      gap: 10,
+      marginBottom: 12,
+    },
+    actionButton: {
+      flex: 1,
+    },
+    name: {
+      fontSize: 19,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginBottom: 8,
+    },
+    text: {
+      color: colors.textSecondary,
+      fontSize: 15,
+      marginBottom: 5,
+    },
+    date: {
+      color: colors.primaryMedium,
+      fontSize: 13,
+      marginTop: 8,
+      fontWeight: "600",
+    },
+    pagination: {
+      marginTop: 14,
+      gap: 10,
+    },
+    pageText: {
+      textAlign: "center",
+      color: colors.textSecondary,
+      fontWeight: "600",
+    },
+  });

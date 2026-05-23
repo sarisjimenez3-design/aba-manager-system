@@ -12,8 +12,8 @@ import AppCard from "../../components/common/AppCard";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import ScreenHeader from "../../components/common/ScreenHeader";
 import SectionTitle from "../../components/common/SectionTitle";
-import { COLORS } from "../../constants/colors";
 import { useAuth } from "../../hooks/useAuth";
+import { useTheme } from "../../hooks/useTheme";
 import { getTrainingsRequest } from "../../services/training.service";
 import { Training } from "../../types/training.types";
 
@@ -27,6 +27,8 @@ const getDateKey = (dateString: string) => {
 
 export default function ScheduleScreen({ navigation }: any) {
   const { user } = useAuth();
+  const { colors, mode } = useTheme();
+  const styles = createStyles(colors);
 
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
@@ -69,19 +71,19 @@ export default function ScheduleScreen({ navigation }: any) {
 
       marks[dateKey] = {
         marked: true,
-        dotColor: COLORS.primaryMedium,
+        dotColor: colors.primaryMedium,
       };
     });
 
     marks[selectedDate] = {
       ...(marks[selectedDate] || {}),
       selected: true,
-      selectedColor: COLORS.primaryMedium,
-      selectedTextColor: COLORS.white,
+      selectedColor: colors.primaryMedium,
+      selectedTextColor: "#FFFFFF",
     };
 
     return marks;
-  }, [trainings, selectedDate]);
+  }, [trainings, selectedDate, colors.primaryMedium]);
 
   return (
     <View style={styles.screen}>
@@ -101,16 +103,23 @@ export default function ScheduleScreen({ navigation }: any) {
 
         <AppCard>
           <Calendar
+            key={mode} 
             markedDates={markedDates}
             onDayPress={(day: DateData) => {
               setSelectedDate(day.dateString);
             }}
             theme={{
-              selectedDayBackgroundColor: COLORS.primaryMedium,
-              selectedDayTextColor: COLORS.white,
-              todayTextColor: COLORS.primaryMedium,
-              arrowColor: COLORS.primaryMedium,
-              monthTextColor: COLORS.textPrimary,
+              calendarBackground: colors.card,
+              selectedDayBackgroundColor: colors.primaryMedium,
+              selectedDayTextColor: "#FFFFFF",
+              todayTextColor: colors.primaryMedium,
+              arrowColor: colors.primaryMedium,
+              monthTextColor: colors.textPrimary,
+              dayTextColor: colors.textPrimary,
+              textDisabledColor: colors.textSecondary,
+              textSectionTitleColor: colors.textSecondary,
+              dotColor: colors.primaryMedium,
+              selectedDotColor: "#FFFFFF",
               textMonthFontWeight: "700",
               textDayFontWeight: "500",
               textDayHeaderFontWeight: "700",
@@ -121,7 +130,7 @@ export default function ScheduleScreen({ navigation }: any) {
         <SectionTitle title={`Entrenamientos del ${selectedDate}`} />
 
         {loading ? (
-          <ActivityIndicator color={COLORS.primaryMedium} size="large" />
+          <ActivityIndicator color={colors.primaryMedium} size="large" />
         ) : trainingsForSelectedDate.length === 0 ? (
           <AppCard>
             <Text style={styles.text}>
@@ -147,28 +156,29 @@ export default function ScheduleScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  content: {
-    padding: 18,
-    paddingBottom: 130,
-  },
-  createButtonContainer: {
-    marginBottom: 18,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
-    marginBottom: 8,
-  },
-  text: {
-    color: COLORS.textSecondary,
-    fontSize: 15,
-    marginBottom: 4,
-    lineHeight: 21,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      padding: 18,
+      paddingBottom: 130,
+    },
+    createButtonContainer: {
+      marginBottom: 18,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginBottom: 8,
+    },
+    text: {
+      color: colors.textSecondary,
+      fontSize: 15,
+      marginBottom: 4,
+      lineHeight: 21,
+    },
+  });

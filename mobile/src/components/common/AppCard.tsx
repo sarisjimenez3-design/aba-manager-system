@@ -1,21 +1,29 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { COLORS } from "../../constants/colors";
+import { useTheme } from "../../hooks/useTheme";
 
-export default function AppCard({ children }: { children: React.ReactNode }) {
+interface Props {
+  children: React.ReactNode;
+}
+
+export default function AppCard({ children }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return <View style={styles.card}>{children}</View>;
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.white,
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 16,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: colors.card,
+      borderRadius: 22,
+      padding: 18,
+      marginBottom: 16,
+      shadowColor: "#000",
+      shadowOpacity: 0.12,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 4,
+    },
+  });
