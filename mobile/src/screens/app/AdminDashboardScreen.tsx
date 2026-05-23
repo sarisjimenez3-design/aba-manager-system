@@ -1,21 +1,28 @@
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import AppCard from "../../components/common/AppCard";
 import ScreenHeader from "../../components/common/ScreenHeader";
 import SectionTitle from "../../components/common/SectionTitle";
+import SimpleBarChart from "../../components/common/SimpleBarChart";
 import { COLORS } from "../../constants/colors";
 import { getAdminDashboardRequest } from "../../services/admin.service";
 import { AdminDashboard } from "../../types/admin.types";
-import { useFocusEffect } from "@react-navigation/native";
-import { Alert } from "react-native";
-import { sendPaymentRemindersRequest } from "../../services/notification.service";
-import PrimaryButton from "@/src/components/common/PrimaryButton";
-import { TouchableOpacity } from "react-native";
+
+const formatCurrency = (value: number) => {
+  return `$${value.toLocaleString("es-CO")} COP`;
+};
 
 export default function AdminDashboardScreen({ navigation }: any) {
   const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sendingReminders, setSendingReminders] = useState(false);
 
   const loadDashboard = async () => {
     try {
@@ -35,37 +42,45 @@ export default function AdminDashboardScreen({ navigation }: any) {
     }, [])
   );
 
- const handleSendReminders = async () => {
-  try {
-    setSendingReminders(true);
-
-    const response = await sendPaymentRemindersRequest();
-
-    Alert.alert(
-      "Recordatorios enviados",
-      `Se enviaron ${response.data.sent} notificaciones.`
-    );
-  } catch (error: any) {
-    Alert.alert(
-      "Error",
-      error?.response?.data?.message || "No se pudieron enviar recordatorios"
-    );
-  } finally {
-    setSendingReminders(false);
-  }
-};
-
   return (
     <View style={styles.screen}>
-      <ScreenHeader title="Admin" subtitle="Resumen real del club" />
+      <ScreenHeader title="Admin" subtitle="Panel administrativo del club" />
 
-      <View style={styles.content}>
-        <SectionTitle title="Indicadores reales" />
-
+      <ScrollView contentContainerStyle={styles.content}>
         {loading ? (
           <ActivityIndicator color={COLORS.primaryMedium} size="large" />
         ) : (
           <>
+            <SectionTitle title="Resumen financiero" />
+
+            <AppCard>
+              <Text style={styles.cardLabel}>Ingresos del mes</Text>
+              <Text style={styles.money}>
+                {formatCurrency(dashboard?.monthlyIncome ?? 0)}
+              </Text>
+              <Text style={styles.text}>
+                Calculado con pagos aprobados durante el mes actual.
+              </Text>
+            </AppCard>
+
+            <View style={styles.grid}>
+              <View style={styles.metricCard}>
+                <Text style={styles.metricNumber}>
+                  {dashboard?.approvedToday ?? 0}
+                </Text>
+                <Text style={styles.metricText}>Pagos aprobados hoy</Text>
+              </View>
+
+              <View style={styles.metricCard}>
+                <Text style={styles.metricNumber}>
+                  {formatCurrency(dashboard?.approvedTodayAmount ?? 0)}
+                </Text>
+                <Text style={styles.metricText}>Ingresos de hoy</Text>
+              </View>
+            </View>
+
+            <SectionTitle title="Usuarios" />
+
             <View style={styles.grid}>
               <View style={styles.metricCard}>
                 <Text style={styles.metricNumber}>
@@ -75,15 +90,15 @@ export default function AdminDashboardScreen({ navigation }: any) {
               </View>
 
               <TouchableOpacity
-  style={styles.metricCard}
-  onPress={() => navigation.navigate("Athletes")}
->
-  <Text style={styles.metricNumber}>
-    {dashboard?.totalAthletes ?? 0}
-  </Text>
-  <Text style={styles.metricText}>Deportistas</Text>
-  <Text style={styles.tapText}>Ver detalle</Text>
-</TouchableOpacity>
+                style={styles.metricCard}
+                onPress={() => navigation.navigate("Athletes")}
+              >
+                <Text style={styles.metricNumber}>
+                  {dashboard?.totalAthletes ?? 0}
+                </Text>
+                <Text style={styles.metricText}>Deportistas</Text>
+                <Text style={styles.tapText}>Ver detalle</Text>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.grid}>
@@ -102,39 +117,44 @@ export default function AdminDashboardScreen({ navigation }: any) {
               </View>
             </View>
 
-            <View style={styles.grid}>
-              <View style={styles.metricCard}>
-                <Text style={styles.metricNumber}>
-                  {dashboard?.pendingPayments ?? 0}
-                </Text>
-                <Text style={styles.metricText}>Pagos pendientes</Text>
-              </View>
-
-              <View style={styles.metricCard}>
-                <Text style={styles.metricNumber}>
-                  {dashboard?.overduePayments ?? 0}
-                </Text>
-                <Text style={styles.metricText}>Pagos en mora</Text>
-              </View>
-            </View>
+            <SectionTitle title="Estado de pagos" />
 
             <AppCard>
-              <Text style={styles.title}>Ingresos aprobados</Text>
-              <Text style={styles.amount}>
-                ${dashboard?.totalApprovedAmount ?? 0} COP
-              </Text>
-              <Text style={styles.text}>
-                Este valor se calcula únicamente con pagos aprobados.
-              </Text>
-              <PrimaryButton
-                title="Enviar recordatorios de pago"
-                onPress={handleSendReminders}  
-                loading={sendingReminders} 
-              />
+              <SimpleBarChart data={dashboard?.paymentStatusChart ?? []} />
             </AppCard>
+
+            <SectionTitle title="Usuarios por rol" />
+
+            <AppCard>
+              <SimpleBarChart data={dashboard?.userRoleChart ?? []} />
+            </AppCard>
+
+            <SectionTitle title="Últimos usuarios registrados" />
+
+            {dashboard?.latestUsers && dashboard.latestUsers.length > 0 ? (
+              dashboard.latestUsers.map((user) => (
+                <AppCard key={user.id}>
+                  <Text style={styles.userName}>
+                    {user.firstName} {user.lastName}
+                  </Text>
+                  <Text style={styles.text}>{user.email}</Text>
+                  <Text style={styles.roleText}>Rol: {user.role}</Text>
+                  <Text style={styles.dateText}>
+                    Registrado:{" "}
+                    {new Date(user.createdAt).toLocaleDateString("es-CO")}
+                  </Text>
+                </AppCard>
+              ))
+            ) : (
+              <AppCard>
+                <Text style={styles.text}>
+                  No hay usuarios registrados recientemente.
+                </Text>
+              </AppCard>
+            )}
           </>
         )}
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -146,6 +166,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 18,
+    paddingBottom: 130,
   },
   grid: {
     flexDirection: "row",
@@ -158,26 +179,35 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 16,
     alignItems: "center",
+    justifyContent: "center",
+    minHeight: 105,
   },
   metricNumber: {
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: "800",
     color: COLORS.primaryMedium,
+    textAlign: "center",
   },
   metricText: {
     color: COLORS.textSecondary,
     fontSize: 13,
     textAlign: "center",
+    marginTop: 4,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.textPrimary,
-    marginBottom: 8,
+  tapText: {
+    color: COLORS.primaryMedium,
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 6,
   },
-  amount: {
-    fontSize: 24,
-    fontWeight: "800",
+  cardLabel: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    marginBottom: 6,
+  },
+  money: {
+    fontSize: 28,
+    fontWeight: "900",
     color: COLORS.primaryMedium,
     marginBottom: 8,
   },
@@ -186,9 +216,20 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 21,
   },
-  tapText: {
+  userName: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+    marginBottom: 6,
+  },
+  roleText: {
     color: COLORS.primaryMedium,
-    fontSize: 11,
-    marginTop: 4,
+    fontWeight: "600",
+    marginTop: 6,
+  },
+  dateText: {
+    color: COLORS.textSecondary,
+    fontSize: 12,
+    marginTop: 6,
   },
 });
