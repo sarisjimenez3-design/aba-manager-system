@@ -2,6 +2,8 @@ import { api } from "../api/axios";
 import { ProfileResponse } from "../types/auth.types";
 import { Athlete } from "../types/user.types";
 import { User } from "../types/auth.types";
+import { PaginationMeta } from "../types/pagination.types";
+
 
 
 export const getMyProfileRequest = async () => {
@@ -28,12 +30,19 @@ export const updateMyProfileRequest = async (payload: {
   return response.data;
 };
 
-export const getAthletesRequest = async () => {
+export const getAthletesRequest = async (params?: {
+  search?: string;
+  page?: number;
+  limit?: number;
+}) => {
   const response = await api.get<{
     success: boolean;
     message: string;
     data: Athlete[];
-  }>("/api/users/athletes");
+    meta: PaginationMeta;
+  }>("/api/users/athletes", {
+    params,
+  });
 
   return response.data;
 };

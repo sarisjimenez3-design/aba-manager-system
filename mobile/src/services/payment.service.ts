@@ -1,5 +1,6 @@
 import { api } from "../api/axios";
 import { Payment, PaymentStatus } from "../types/payment.types";
+import { PaginationMeta } from "../types/pagination.types";
 
 export const getMyPaymentsRequest = async () => {
   const response = await api.get<{
@@ -11,12 +12,20 @@ export const getMyPaymentsRequest = async () => {
   return response.data;
 };
 
-export const getAllPaymentsRequest = async () => {
+export const getAllPaymentsRequest = async (params?: {
+  status?: PaymentStatus;
+  search?: string;
+  page?: number;
+  limit?: number;
+}) => {
   const response = await api.get<{
     success: boolean;
     message: string;
     data: Payment[];
-  }>("/api/payments");
+    meta: PaginationMeta;
+  }>("/api/payments", {
+    params,
+  });
 
   return response.data;
 };

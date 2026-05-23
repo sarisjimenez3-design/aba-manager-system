@@ -57,11 +57,17 @@ export default function ProfileScreen({navigation}: any) {
             {user?.isActive ? "Activo" : "No disponible"}
           </Text>
         </View>
-        <PrimaryButton
-          title="Editar perfil"
-          onPress={() => navigation.navigate("EditProfile")}
-        />
-        <PrimaryButton title="Cerrar sesión" onPress={signOut} />
+        <View style={styles.buttonContainer}>
+  <PrimaryButton
+    title="Editar perfil"
+    onPress={() => navigation.navigate("EditProfile")}
+  />
+
+  <PrimaryButton
+    title="Cerrar sesión"
+    onPress={signOut}
+  />
+</View>
       </View>
     </View>
   );
@@ -143,5 +149,9 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontSize: 16,
     fontWeight: "500",
+  },
+  buttonContainer: {
+    gap: 14,
+    marginTop: 18,
   },
 });

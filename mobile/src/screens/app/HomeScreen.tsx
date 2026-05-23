@@ -306,12 +306,19 @@ export default function HomeScreen() {
                 <Text style={styles.postTitle}>{post.title}</Text>
                 <Text style={styles.postContent}>{post.content}</Text>
 
-                {post.imageUrl ? (
-                  <Image
-                    source={{ uri: getImageUrl(post.imageUrl) }}
-                    style={styles.postImage}
-                  />
-                ) : null}
+                {(() => {
+  const imageUri = getImageUrl(post.imageUrl);
+
+  if (!imageUri) return null;
+
+  return (
+    <Image
+      source={{ uri: imageUri }}
+      style={styles.postImage}
+      resizeMode="cover"
+    />
+  );
+})()}
               </AppCard>
             ))
           )}

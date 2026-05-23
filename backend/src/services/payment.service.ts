@@ -83,22 +83,95 @@ export const getMyPayments = async (userId: string) => {
   });
 };
 
-export const getAllPayments = async () => {
-  return prisma.payment.findMany({
-    include: {
-      user: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
-          role: true,
+export const getAllPayments = async (params?: {
+  status?: "PENDING" | "APPROVED" | "REJECTED" | "OVERDUE";
+  search?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  const page = params?.page && params.page > 0 ? params.page : 1;
+  const limit = params?.limit && params.limit > 0 ? params.limit : 10;
+  const skip = (page - 1) * limit;
+
+  const search = params?.search?.trim();
+
+  const where = {
+    ...(params?.status
+      ? {
+          status: params.status,
+        }
+      : {}),
+    ...(search
+      ? {
+          user: {
+            OR: [
+              {
+                firstName: {
+                  contains: search,
+                  mode: "insensitive" as const,
+                },
+              },
+              {
+                lastName: {
+                  contains: search,
+                  mode: "insensitive" as const,
+                },
+              },
+              {
+                email: {
+                  contains: search,
+                  mode: "insensitive" as const,
+                },
+              },
+              {
+                phone: {
+                  contains: search,
+                  mode: "insensitive" as const,
+                },
+              },
+            ],
+          },
+        }
+      : {}),
+  };
+
+  const [payments, total] = await Promise.all([
+    prisma.payment.findMany({
+      where,
+      skip,
+      take: limit,
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+            role: true,
+          },
         },
       },
+      orderBy: [
+        {
+          createdAt: "desc",
+        },
+      ],
+    }),
+    prisma.payment.count({
+      where,
+    }),
+  ]);
+
+  return {
+    data: payments,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
     },
-    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
-  });
+  };
 };
 
 export const updatePaymentStatus = async (

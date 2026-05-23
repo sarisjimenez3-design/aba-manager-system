@@ -144,14 +144,82 @@ export const createInternalUser = async (data: CreateInternalUserInput) => {
   return user;
 };
 
-export const getAthletes = async () => {
-  return prisma.user.findMany({
-    where: {
-      role: UserRole.ATHLETE,
+export const getAthletes = async (params: {
+  search?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  const page = params.page && params.page > 0 ? params.page : 1;
+  const limit = params.limit && params.limit > 0 ? params.limit : 10;
+  const skip = (page - 1) * limit;
+
+  const search = params.search?.trim();
+
+  const where = {
+    role: "ATHLETE" as const,
+    ...(search
+      ? {
+          OR: [
+            {
+              firstName: {
+                contains: search,
+                mode: "insensitive" as const,
+              },
+            },
+            {
+              lastName: {
+                contains: search,
+                mode: "insensitive" as const,
+              },
+            },
+            {
+              email: {
+                contains: search,
+                mode: "insensitive" as const,
+              },
+            },
+            {
+              phone: {
+                contains: search,
+                mode: "insensitive" as const,
+              },
+            },
+          ],
+        }
+      : {}),
+  };
+
+  const [athletes, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+    prisma.user.count({
+      where,
+    }),
+  ]);
+
+  return {
+    data: athletes,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
     },
-    select: userPublicSelect,
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  };
 };

@@ -1,5 +1,10 @@
 import React from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { COLORS } from "../../constants/colors";
 
@@ -7,15 +12,30 @@ interface Props {
   title: string;
   onPress: () => void;
   loading?: boolean;
+  disabled?: boolean;
 }
 
-export default function PrimaryButton({ title, onPress, loading }: Props) {
+export default function PrimaryButton({
+  title,
+  onPress,
+  loading = false,
+  disabled = false,
+}: Props) {
+  const isDisabled = loading || disabled;
+
   return (
-    <Pressable onPress={onPress} disabled={loading}>
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={onPress}
+      disabled={isDisabled}
+      style={isDisabled ? styles.disabledWrapper : undefined}
+    >
       <LinearGradient
-        colors={[COLORS.primaryLight, COLORS.primaryDark]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
+        colors={
+          isDisabled
+            ? [COLORS.textSecondary, COLORS.textSecondary]
+            : [COLORS.primaryLight, COLORS.primaryDark]
+        }
         style={styles.button}
       >
         {loading ? (
@@ -24,26 +44,23 @@ export default function PrimaryButton({ title, onPress, loading }: Props) {
           <Text style={styles.text}>{title}</Text>
         )}
       </LinearGradient>
-    </Pressable>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
     height: 52,
-    borderRadius: 14,
-    justifyContent: "center",
+    borderRadius: 16,
     alignItems: "center",
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    elevation: 5,
-    marginTop: 8,
+    justifyContent: "center",
   },
   text: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
+  },
+  disabledWrapper: {
+    opacity: 0.65,
   },
 });
