@@ -1,47 +1,43 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { Calendar, DateData } from "react-native-calendars";
 import AppCard from "../../components/common/AppCard";
 import PrimaryButton from "../../components/common/PrimaryButton";
 import ScreenHeader from "../../components/common/ScreenHeader";
 import SectionTitle from "../../components/common/SectionTitle";
 import { COLORS } from "../../constants/colors";
 import { useAuth } from "../../hooks/useAuth";
-import {
-  createTrainingRequest,
-  getTrainingsRequest,
-} from "../../services/training.service";
+import { getTrainingsRequest } from "../../services/training.service";
 import { Training } from "../../types/training.types";
 
-export default function ScheduleScreen() {
+const getTodayDate = () => {
+  return new Date().toISOString().split("T")[0];
+};
+
+const getDateKey = (dateString: string) => {
+  return new Date(dateString).toISOString().split("T")[0];
+};
+
+export default function ScheduleScreen({ navigation }: any) {
   const { user } = useAuth();
 
   const [trainings, setTrainings] = useState<Training[]>([]);
+  const [selectedDate, setSelectedDate] = useState(getTodayDate());
   const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
-
-  const [title, setTitle] = useState("");
-  const [day, setDay] = useState("");
-  const [hour, setHour] = useState("");
-  const [place, setPlace] = useState("");
-  const [category, setCategory] = useState("");
-  const [coachName, setCoachName] = useState("");
 
   const canCreateTraining = user?.role === "ADMIN" || user?.role === "COACH";
 
   const loadTrainings = async () => {
     try {
+      setLoading(true);
+
       const response = await getTrainingsRequest();
       setTrainings(response.data);
     } catch (error) {
@@ -51,157 +47,103 @@ export default function ScheduleScreen() {
     }
   };
 
-  useEffect(() => {
-    loadTrainings();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadTrainings();
+    }, [])
+  );
 
-  const handleCreateTraining = async () => {
-    try {
-      if (
-        !title.trim() ||
-        !day.trim() ||
-        !hour.trim() ||
-        !place.trim() ||
-        !category.trim() ||
-        !coachName.trim()
-      ) {
-        Alert.alert("Campos requeridos", "Completa todos los campos.");
-        return;
-      }
+  const trainingsForSelectedDate = trainings.filter((training) => {
+    if (!training.trainingDate) return false;
 
-      setCreating(true);
+    return getDateKey(training.trainingDate) === selectedDate;
+  });
 
-      await createTrainingRequest({
-        title: title.trim(),
-        day: day.trim(),
-        hour: hour.trim(),
-        place: place.trim(),
-        category: category.trim(),
-        coachName: coachName.trim(),
-      });
+  const markedDates = useMemo(() => {
+    const marks: Record<string, any> = {};
 
-      setTitle("");
-      setDay("");
-      setHour("");
-      setPlace("");
-      setCategory("");
-      setCoachName("");
-      Keyboard.dismiss();
+    trainings.forEach((training) => {
+      if (!training.trainingDate) return;
 
-      await loadTrainings();
+      const dateKey = getDateKey(training.trainingDate);
 
-      Alert.alert("Éxito", "Entrenamiento creado correctamente.");
-    } catch (error: any) {
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "No se pudo crear el entrenamiento"
-      );
-    } finally {
-      setCreating(false);
-    }
-  };
+      marks[dateKey] = {
+        marked: true,
+        dotColor: COLORS.primaryMedium,
+      };
+    });
+
+    marks[selectedDate] = {
+      ...(marks[selectedDate] || {}),
+      selected: true,
+      selectedColor: COLORS.primaryMedium,
+      selectedTextColor: COLORS.white,
+    };
+
+    return marks;
+  }, [trainings, selectedDate]);
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView
-        style={styles.screen}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScreenHeader title="Agenda" subtitle="Entrenamientos programados" />
+    <View style={styles.screen}>
+      <ScreenHeader title="Agenda" subtitle="Calendario de entrenamientos" />
 
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-        >
-          {canCreateTraining && (
-            <>
-              <SectionTitle title="Crear entrenamiento" />
+      <ScrollView contentContainerStyle={styles.content}>
+        {canCreateTraining && (
+          <View style={styles.createButtonContainer}>
+            <PrimaryButton
+              title="Crear entrenamiento"
+              onPress={() => navigation.navigate("CreateTraining")}
+            />
+          </View>
+        )}
 
-              <AppCard>
-                <TextInput
-                  placeholder="Título del entrenamiento"
-                  placeholderTextColor={COLORS.textSecondary}
-                  value={title}
-                  onChangeText={setTitle}
-                  style={styles.input}
-                />
+        <SectionTitle title="Calendario" />
 
-                <TextInput
-                  placeholder="Día o frecuencia"
-                  placeholderTextColor={COLORS.textSecondary}
-                  value={day}
-                  onChangeText={setDay}
-                  style={styles.input}
-                />
+        <AppCard>
+          <Calendar
+            markedDates={markedDates}
+            onDayPress={(day: DateData) => {
+              setSelectedDate(day.dateString);
+            }}
+            theme={{
+              selectedDayBackgroundColor: COLORS.primaryMedium,
+              selectedDayTextColor: COLORS.white,
+              todayTextColor: COLORS.primaryMedium,
+              arrowColor: COLORS.primaryMedium,
+              monthTextColor: COLORS.textPrimary,
+              textMonthFontWeight: "700",
+              textDayFontWeight: "500",
+              textDayHeaderFontWeight: "700",
+            }}
+          />
+        </AppCard>
 
-                <TextInput
-                  placeholder="Hora"
-                  placeholderTextColor={COLORS.textSecondary}
-                  value={hour}
-                  onChangeText={setHour}
-                  style={styles.input}
-                />
+        <SectionTitle title={`Entrenamientos del ${selectedDate}`} />
 
-                <TextInput
-                  placeholder="Sede o lugar"
-                  placeholderTextColor={COLORS.textSecondary}
-                  value={place}
-                  onChangeText={setPlace}
-                  style={styles.input}
-                />
-
-                <TextInput
-                  placeholder="Categoría"
-                  placeholderTextColor={COLORS.textSecondary}
-                  value={category}
-                  onChangeText={setCategory}
-                  style={styles.input}
-                />
-
-                <TextInput
-                  placeholder="Nombre del entrenador"
-                  placeholderTextColor={COLORS.textSecondary}
-                  value={coachName}
-                  onChangeText={setCoachName}
-                  style={styles.input}
-                />
-
-                <PrimaryButton
-                  title="Guardar entrenamiento"
-                  onPress={handleCreateTraining}
-                  loading={creating}
-                />
-              </AppCard>
-            </>
-          )}
-
-          <SectionTitle title="Próximos entrenamientos" />
-
-          {loading ? (
-            <ActivityIndicator color={COLORS.primaryMedium} size="large" />
-          ) : trainings.length === 0 ? (
-            <AppCard>
+        {loading ? (
+          <ActivityIndicator color={COLORS.primaryMedium} size="large" />
+        ) : trainingsForSelectedDate.length === 0 ? (
+          <AppCard>
+            <Text style={styles.text}>
+              No hay entrenamientos programados para esta fecha.
+            </Text>
+          </AppCard>
+        ) : (
+          trainingsForSelectedDate.map((training) => (
+            <AppCard key={training.id}>
+              <Text style={styles.title}>{training.title}</Text>
+              <Text style={styles.text}>Día: {training.day}</Text>
+              <Text style={styles.text}>Hora: {training.hour}</Text>
+              <Text style={styles.text}>Sede: {training.place}</Text>
+              <Text style={styles.text}>Categoría: {training.category}</Text>
               <Text style={styles.text}>
-                Aún no hay entrenamientos registrados.
+                Entrenador: {training.coachName}
               </Text>
             </AppCard>
-          ) : (
-            trainings.map((training) => (
-              <AppCard key={training.id}>
-                <Text style={styles.title}>{training.title}</Text>
-                <Text style={styles.text}>Día: {training.day}</Text>
-                <Text style={styles.text}>Hora: {training.hour}</Text>
-                <Text style={styles.text}>Sede: {training.place}</Text>
-                <Text style={styles.text}>Categoría: {training.category}</Text>
-                <Text style={styles.text}>
-                  Entrenador: {training.coachName}
-                </Text>
-              </AppCard>
-            ))
-          )}
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+          ))
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -214,12 +156,8 @@ const styles = StyleSheet.create({
     padding: 18,
     paddingBottom: 130,
   },
-  input: {
-    backgroundColor: COLORS.background,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 10,
-    color: COLORS.textPrimary,
+  createButtonContainer: {
+    marginBottom: 18,
   },
   title: {
     fontSize: 18,

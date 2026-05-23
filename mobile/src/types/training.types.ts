@@ -6,4 +6,5 @@ export interface Training {
   place: string;
   category: string;
   coachName: string;
+  trainingDate: string;
 }
