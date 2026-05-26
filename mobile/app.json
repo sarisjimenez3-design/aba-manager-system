@@ -6,10 +6,10 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
-    "icon": ".src/assets/images/icon.png",
+    "icon": "./src/assets/images/icon.png",
     "scheme": "aba-manager",
     "splash": {
-      "image": ".src/assets/images/splash.png",
+      "image": "./src/assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#004B25"
     },
@@ -20,13 +20,13 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
-        "foregroundImage": ".src/assets/images/adaptive-icon.png",
+        "foregroundImage": "./src/assets/images/adaptive-icon.png",
         "backgroundColor": "#004B25"
       },
       "package": "com.sarajimenez.abamanager"
     },
     "web": {
-      "favicon": ".src/assets/images/favicon.png"
+      "favicon": "./src/assets/images/favicon.png"
     },
     "plugins": [
       "expo-notifications"
