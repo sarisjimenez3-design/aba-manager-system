@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import PrimaryButton from "../../components/common/PrimaryButton";
+import ThemeSwitch from "../../components/common/ThemeSwitch";
 import { useAuth } from "../../hooks/useAuth";
 import { useTheme } from "../../hooks/useTheme";
-import ThemeSwitch from "../../components/common/ThemeSwitch";
 
 export default function ProfileScreen({ navigation }: any) {
   const { user, signOut, refreshProfile } = useAuth();
-
-  const { mode, colors, toggleTheme } = useTheme();
+  const { colors } = useTheme();
 
   const styles = createStyles(colors);
 
@@ -34,72 +35,64 @@ export default function ProfileScreen({ navigation }: any) {
   if (loadingProfile) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator
-          size="large"
-          color={colors.primaryMedium}
-        />
+        <ActivityIndicator size="large" color={colors.primaryMedium} />
 
-        <Text style={styles.loadingText}>
-          Cargando perfil...
-        </Text>
+        <Text style={styles.loadingText}>Cargando perfil...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.screen}>
-      <View style={styles.card}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {user?.firstName?.charAt(0) || ""}
-            {user?.lastName?.charAt(0) || ""}
+    <SafeAreaView style={styles.screen}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.card}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {user?.firstName?.charAt(0) || ""}
+              {user?.lastName?.charAt(0) || ""}
+            </Text>
+          </View>
+
+          <Text style={styles.name}>
+            {user?.firstName} {user?.lastName}
           </Text>
+
+          <Text style={styles.email}>{user?.email}</Text>
+
+          <Text style={styles.role}>Rol: {user?.role}</Text>
+
+          <View style={styles.infoBox}>
+            <Text style={styles.infoLabel}>Teléfono</Text>
+
+            <Text style={styles.infoValue}>
+              {user?.phone || "No registrado"}
+            </Text>
+          </View>
+
+          <View style={styles.infoBox}>
+            <Text style={styles.infoLabel}>Estado</Text>
+
+            <Text style={styles.infoValue}>
+              {user?.isActive ? "Activo" : "No disponible"}
+            </Text>
+          </View>
+
+          <View style={styles.buttonContainer}>
+            <PrimaryButton
+              title="Editar perfil"
+              onPress={() => navigation.navigate("EditProfile")}
+            />
+
+            <ThemeSwitch />
+
+            <PrimaryButton title="Cerrar sesión" onPress={signOut} />
+          </View>
         </View>
-
-        <Text style={styles.name}>
-          {user?.firstName} {user?.lastName}
-        </Text>
-
-        <Text style={styles.email}>
-          {user?.email}
-        </Text>
-
-        <Text style={styles.role}>
-          Rol: {user?.role}
-        </Text>
-
-        <View style={styles.infoBox}>
-          <Text style={styles.infoLabel}>
-            Teléfono
-          </Text>
-
-          <Text style={styles.infoValue}>
-            {user?.phone || "No registrado"}
-          </Text>
-        </View>
-
-        <View style={styles.infoBox}>
-          <Text style={styles.infoLabel}>
-            Estado
-          </Text>
-
-          <Text style={styles.infoValue}>
-            {user?.isActive ? "Activo" : "No disponible"}
-          </Text>
-        </View>
-
-        <View style={styles.buttonContainer}>
-  <PrimaryButton
-    title="Editar perfil"
-    onPress={() => navigation.navigate("EditProfile")}
-  />
-
-  <ThemeSwitch />
-
-  <PrimaryButton title="Cerrar sesión" onPress={signOut} />
-</View>
-      </View>
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -108,7 +101,13 @@ const createStyles = (colors: any) =>
     screen: {
       flex: 1,
       backgroundColor: colors.background,
-      padding: 20,
+    },
+
+    content: {
+      flexGrow: 1,
+      paddingHorizontal: 20,
+      paddingTop: 28,
+      paddingBottom: 150,
       justifyContent: "center",
     },
 
@@ -128,8 +127,7 @@ const createStyles = (colors: any) =>
     card: {
       backgroundColor: colors.card,
       borderRadius: 24,
-      padding: 24,
-
+      padding: 22,
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.12,
@@ -138,61 +136,48 @@ const createStyles = (colors: any) =>
     },
 
     avatar: {
-      width: 84,
-      height: 84,
-      borderRadius: 42,
-
+      width: 78,
+      height: 78,
+      borderRadius: 39,
       backgroundColor: colors.primaryDark,
-
       justifyContent: "center",
       alignItems: "center",
-
       alignSelf: "center",
-
-      marginBottom: 16,
+      marginBottom: 14,
     },
 
     avatarText: {
       color: "#FFFFFF",
-      fontSize: 28,
+      fontSize: 26,
       fontWeight: "700",
     },
 
     name: {
       textAlign: "center",
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: "700",
-
       color: colors.textPrimary,
     },
 
     email: {
       textAlign: "center",
-
       color: colors.textSecondary,
-
       marginTop: 6,
       marginBottom: 8,
     },
 
     role: {
       textAlign: "center",
-
       color: colors.primaryMedium,
-
       fontWeight: "600",
-
-      marginBottom: 18,
+      marginBottom: 16,
     },
 
     infoBox: {
       backgroundColor: colors.inputBackground,
-
       borderRadius: 14,
-
       padding: 14,
-
-      marginBottom: 14,
+      marginBottom: 12,
     },
 
     infoLabel: {
@@ -208,7 +193,7 @@ const createStyles = (colors: any) =>
     },
 
     buttonContainer: {
-      gap: 14,
-      marginTop: 18,
+      gap: 12,
+      marginTop: 16,
     },
   });
