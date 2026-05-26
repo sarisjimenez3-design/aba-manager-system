@@ -46,6 +46,8 @@ export const validateRegisterInput = (
   const normalizedLastName = lastName.trim();
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedPassword = password.trim();
+  const normalizedRole = role.trim().toUpperCase();
+
   const normalizedPhone =
     phone !== undefined && phone !== null ? String(phone).trim() : undefined;
 
@@ -77,14 +79,15 @@ export const validateRegisterInput = (
     };
   }
 
-  const allowedRoles = Object.values(UserRole);
-  if (!allowedRoles.includes(role as UserRole)) {
-    return {
-      isValid: false,
-      message: "El rol enviado no es válido",
-    };
-  }
+const publicRoles: UserRole[] = [UserRole.ATHLETE, UserRole.PARENT];
 
+if (!publicRoles.includes(normalizedRole as UserRole)) {
+  return {
+    isValid: false,
+    message:
+      "El registro público solo permite deportistas o padres de familia",
+  };
+}
   if (normalizedPhone && normalizedPhone.length < 7) {
     return {
       isValid: false,
@@ -100,7 +103,7 @@ export const validateRegisterInput = (
       email: normalizedEmail,
       password: normalizedPassword,
       phone: normalizedPhone,
-      role: role as UserRole,
+      role: normalizedRole as UserRole,
     },
   };
 };
@@ -146,6 +149,88 @@ export const validateLoginInput = (
     data: {
       email: normalizedEmail,
       password: normalizedPassword,
+    },
+  };
+};
+export interface ForgotPasswordInput {
+  email: string;
+}
+
+export interface ResetPasswordInput {
+  token: string;
+  newPassword: string;
+}
+
+export const validateForgotPasswordInput = (
+  body: any
+): { isValid: boolean; message?: string; data?: ForgotPasswordInput } => {
+  const { email } = body;
+
+  if (!email) {
+    return {
+      isValid: false,
+      message: "El correo electrónico es obligatorio",
+    };
+  }
+
+  if (typeof email !== "string") {
+    return {
+      isValid: false,
+      message: "El correo electrónico tiene un formato inválido",
+    };
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (!emailRegex.test(normalizedEmail)) {
+    return {
+      isValid: false,
+      message: "El correo electrónico no es válido",
+    };
+  }
+
+  return {
+    isValid: true,
+    data: {
+      email: normalizedEmail,
+    },
+  };
+};
+
+export const validateResetPasswordInput = (
+  body: any
+): { isValid: boolean; message?: string; data?: ResetPasswordInput } => {
+  const { token, newPassword } = body;
+
+  if (!token || !newPassword) {
+    return {
+      isValid: false,
+      message: "El token y la nueva contraseña son obligatorios",
+    };
+  }
+
+  if (typeof token !== "string" || typeof newPassword !== "string") {
+    return {
+      isValid: false,
+      message: "Los datos enviados tienen un formato inválido",
+    };
+  }
+
+  const normalizedToken = token.trim();
+  const normalizedPassword = newPassword.trim();
+
+  if (normalizedPassword.length < 6) {
+    return {
+      isValid: false,
+      message: "La nueva contraseña debe tener mínimo 6 caracteres",
+    };
+  }
+
+  return {
+    isValid: true,
+    data: {
+      token: normalizedToken,
+      newPassword: normalizedPassword,
     },
   };
 };

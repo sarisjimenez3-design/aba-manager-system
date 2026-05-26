@@ -1,54 +1,54 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { COLORS } from "../../constants/colors";
+import { useTheme } from "../../hooks/useTheme";
 
 interface Props {
   title: string;
 }
 
 export default function AuthHeader({ title }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <LinearGradient
-      colors={[COLORS.primaryLight, COLORS.primaryDark]}
+      colors={[colors.primaryLight, colors.primaryDark]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={styles.container}
     >
-      <View style={styles.logoCircle}>
-        <Text style={styles.logoText}>ABA</Text>
-      </View>
+      <Image
+        source={require("../../assets/logo-aba.png")}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+
       <Text style={styles.title}>{title}</Text>
     </LinearGradient>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    height: 220,
-    justifyContent: "flex-end",
-    alignItems: "center",
-    paddingBottom: 28,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-  },
-  logoCircle: {
-    width: 92,
-    height: 92,
-    borderRadius: 46,
-    backgroundColor: COLORS.white,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 14,
-  },
-  logoText: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: COLORS.primaryDark,
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: "700",
-    color: COLORS.white,
-  },
-});
+const createStyles = (_colors: any) =>
+  StyleSheet.create({
+    container: {
+      height: 240,
+      justifyContent: "flex-end",
+      alignItems: "center",
+      paddingBottom: 30,
+      borderBottomLeftRadius: 30,
+      borderBottomRightRadius: 30,
+    },
+
+    logo: {
+      width: 115,
+      height: 115,
+      marginBottom: 12,
+    },
+
+    title: {
+      fontSize: 30,
+      fontWeight: "700",
+      color: "#FFFFFF",
+    },
+  });

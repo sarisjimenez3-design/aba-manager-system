@@ -8,17 +8,23 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  firstName    String
-  lastName     String
-  email        String   @unique
-  passwordHash String
-  phone        String?
-  profilePhoto String?
-  role         UserRole
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                   String   @id @default(uuid())
+  firstName            String
+  lastName             String
+  email                String   @unique
+  passwordHash         String
+  phone                String?
+  role                 UserRole
+  isActive             Boolean  @default(true)
+  expoPushToken        String?
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  payments             Payment[]
+  posts                Post[] @relation("UserPosts")
+  supportTickets       SupportTicket[]
 }
 
 enum UserRole {
@@ -26,4 +32,65 @@ enum UserRole {
   COACH
   ATHLETE
   PARENT
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  OVERDUE
+}
+
+model Payment {
+  id        String        @id @default(uuid())
+  userId    String
+  amount    Int
+  month     String
+  status    PaymentStatus @default(PENDING)
+  proofUrl  String?
+  dueDate   DateTime
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Training {
+  id           String   @id @default(uuid())
+  title        String
+  day          String
+  hour         String
+  place        String
+  category     String
+  coachName    String
+  trainingDate DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  imageUrl  String?
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author User @relation("UserPosts", fields: [authorId], references: [id])
+}
+
+model SupportTicket {
+  id      String @id @default(uuid())
+  subject String
+  message String
+  status  String @default("PENDING")
+
+  response    String?
+  respondedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 }

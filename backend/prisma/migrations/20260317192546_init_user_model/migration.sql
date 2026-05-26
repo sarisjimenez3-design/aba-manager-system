@@ -1,7 +1,5 @@
--- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'COACH', 'ATHLETE', 'PARENT');
 
--- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
@@ -18,5 +16,4 @@ CREATE TABLE "User" (
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");

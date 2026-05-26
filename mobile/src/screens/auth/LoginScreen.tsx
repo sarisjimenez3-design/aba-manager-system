@@ -23,10 +23,15 @@ export default function LoginScreen({ navigation }: any) {
 
   const handleLogin = async () => {
     try {
+      if (!email.trim() || !password.trim()) {
+        Alert.alert("Campos requeridos", "Debes ingresar correo y contraseña");
+        return;
+      }
+
       setLoading(true);
-      await signIn(email, password);
-    } catch (error) {
-      Alert.alert("Error", "No se pudo iniciar sesión");
+      await signIn(email.trim(), password.trim());
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "No se pudo iniciar sesión");
     } finally {
       setLoading(false);
     }
@@ -61,9 +66,12 @@ export default function LoginScreen({ navigation }: any) {
           loading={loading}
         />
 
-        <TouchableOpacity style={styles.link}>
-          <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
-        </TouchableOpacity>
+       <TouchableOpacity
+         style={styles.link}
+         onPress={() => navigation.navigate("ForgotPassword")}
+       >
+         <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
+       </TouchableOpacity>
 
         <View style={styles.divider} />
 

@@ -7,6 +7,7 @@ export const loginRequest = async (email: string, password: string) => {
     password,
   });
 
+  console.log("AXIOS LOGIN RAW:", response.data);
   return response.data;
 };
 
@@ -19,5 +20,27 @@ export const registerRequest = async (payload: {
   role: UserRole;
 }) => {
   const response = await api.post("/api/auth/register", payload);
+
+  console.log("AXIOS REGISTER RAW:", response.data);
+  return response.data;
+};
+
+export const forgotPasswordRequest = async (email: string) => {
+  const response = await api.post("/api/auth/forgot-password", {
+    email,
+  });
+
+  return response.data;
+};
+
+export const resetPasswordRequest = async (
+  token: string,
+  newPassword: string
+) => {
+  const response = await api.post("/api/auth/reset-password", {
+    token,
+    newPassword,
+  });
+
   return response.data;
 };

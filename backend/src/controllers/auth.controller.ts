@@ -1,20 +1,23 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { loginUser, registerUser } from "../services/auth.service";
 import {
   validateLoginInput,
   validateRegisterInput,
 } from "../validators/auth.validator";
+import { AppError } from "../utils/app-error";
+import { forgotPassword, resetPassword } from "../services/auth.service";
+import { validateForgotPasswordInput, validateResetPasswordInput } from "../validators/auth.validator";
 
-export const register = async (req: Request, res: Response): Promise<void> => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const validation = validateRegisterInput(req.body);
 
     if (!validation.isValid) {
-      res.status(400).json({
-        success: false,
-        message: validation.message,
-      });
-      return;
+      throw new AppError(validation.message || "Datos inválidos", 400);
     }
 
     const user = await registerUser(validation.data!);
@@ -25,26 +28,20 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       data: user,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error al registrar usuario";
-
-    res.status(400).json({
-      success: false,
-      message,
-    });
+    next(error);
   }
 };
 
-export const login = async (req: Request, res: Response): Promise<void> => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const validation = validateLoginInput(req.body);
 
     if (!validation.isValid) {
-      res.status(400).json({
-        success: false,
-        message: validation.message,
-      });
-      return;
+      throw new AppError(validation.message || "Datos inválidos", 400);
     }
 
     const result = await loginUser(validation.data!);
@@ -55,12 +52,54 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       data: result,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error al iniciar sesión";
+    next(error);
+  }
+};
+export const forgotPasswordController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const validation = validateForgotPasswordInput(req.body);
 
-    res.status(401).json({
-      success: false,
-      message,
+    if (!validation.isValid) {
+      throw new AppError(validation.message || "Datos inválidos", 400);
+    }
+
+    const result = await forgotPassword(validation.data!.email);
+
+    res.json({
+      success: true,
+      message: result.message,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPasswordController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const validation = validateResetPasswordInput(req.body);
+
+    if (!validation.isValid) {
+      throw new AppError(validation.message || "Datos inválidos", 400);
+    }
+
+    const result = await resetPassword(
+      validation.data!.token,
+      validation.data!.newPassword
+    );
+
+    res.json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
   }
 };

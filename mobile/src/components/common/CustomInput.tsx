@@ -1,14 +1,15 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, TextInput, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "../../constants/colors";
+import { useTheme } from "../../hooks/useTheme";
 
 interface Props {
   placeholder: string;
   value: string;
-  onChangeText: (text: string) => void;
-  icon: keyof typeof Ionicons.glyphMap;
+  onChangeText: (value: string) => void;
+  icon?: keyof typeof Ionicons.glyphMap;
   secureTextEntry?: boolean;
+  keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
 }
 
 export default function CustomInput({
@@ -16,42 +17,58 @@ export default function CustomInput({
   value,
   onChangeText,
   icon,
-  secureTextEntry,
+  secureTextEntry = false,
+  keyboardType = "default",
 }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <View style={styles.container}>
-      <Ionicons name={icon} size={20} color={COLORS.inputIcon} />
+      {icon ? (
+        <Ionicons
+          name={icon}
+          size={22}
+          color={colors.primaryMedium}
+          style={styles.icon}
+        />
+      ) : null}
+
       <TextInput
         placeholder={placeholder}
-        placeholderTextColor={COLORS.textSecondary}
+        placeholderTextColor={colors.inputPlaceholder}
         value={value}
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
+        keyboardType={keyboardType}
         style={styles.input}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    height: 50,
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    marginBottom: 14,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  input: {
-    flex: 1,
-    marginLeft: 10,
-    color: COLORS.textPrimary,
-    fontSize: 15,
-  },
-});
+const createStyles = (colors: any) =>
+  StyleSheet.create({
+    container: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.inputBackground,
+      borderRadius: 14,
+      paddingHorizontal: 14,
+      height: 54,
+      marginBottom: 14,
+      shadowColor: "#000",
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 2,
+    },
+    icon: {
+      marginRight: 10,
+    },
+    input: {
+      flex: 1,
+      color: colors.textPrimary,
+      fontSize: 15,
+    },
+  });
