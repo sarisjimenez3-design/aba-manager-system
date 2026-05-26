@@ -22,10 +22,15 @@ Aplicación móvil y sistema backend desarrollado para la gestión administrativ
 - [Roadmap y mejoras futuras](#roadmap-y-mejoras-futuras)
 - [Seguridad implementada](#seguridad-implementada)
 - [Calidad del software](#calidad-del-software)
-- [Instalación local](docs\setup-notes.md)
+- [Instalación local](#instalación-local)
 - [APK Android](#apk-android)
 - [Despliegue](#despliegue)
 - [Autores](#autores)
+# Diagramas del sistema
+
+- [Diagrama de Secuencia o Flujo](docs/diagrams/sequence-flow.md)
+- [Diagrama Entidad-Relación](docs/diagrams/entity-relationship.md)
+- [Diagrama de Componentes](docs/diagrams/components.md)
 
 ---
 
@@ -356,7 +361,7 @@ El proyecto fue analizado mediante SonarCloud.
 ## Resultados
 
 - Fiabilidad: A
-- Seguridad: A
+- Seguridad: C
 - Mantenibilidad: A
 - Baja duplicación de código
 
@@ -367,6 +372,11 @@ https://sonarcloud.io/project/overview?id=sarisjimenez3-design_aba-manager-syste
 ```
 
 ---
+# Instalación local
+
+La documentación técnica y guía de instalación se encuentra en:
+
+[Ver guía de instalación local](docs/setup-notes.md)
 
 # Git Flow
 
