@@ -18,10 +18,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/health", (_req, res) => {
-  res.status(200).json({
+app.get("/", (_req, res) => {
+  res.json({
     success: true,
-    message: "ABA Manager API funcionando",
+    message: "ABA Manager API desplegada correctamente",
   });
 });
 
