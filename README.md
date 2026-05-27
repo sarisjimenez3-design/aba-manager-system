@@ -26,7 +26,7 @@ Aplicación móvil y sistema backend desarrollado para la gestión administrativ
 - [APK Android](#apk-android)
 - [Despliegue](#despliegue)
 - [Autores](#autores)
-# Diagramas del sistema
+# Diagramas
 
 - [Diagrama de Secuencia o Flujo](docs/diagrams/sequence-flow.md)
 - [Diagrama Entidad-Relación](docs/diagrams/entity-relationship.md)
@@ -46,7 +46,7 @@ Actualmente muchos procesos administrativos se realizan manualmente mediante men
 - Problemas de comunicación con los usuarios
 - Falta de seguimiento administrativo
 
-Por esta razón se desarrolló ABA Manager, una aplicación móvil conectada a una API REST y base de datos PostgreSQL para automatizar estos procesos.
+
 
 ---
 
